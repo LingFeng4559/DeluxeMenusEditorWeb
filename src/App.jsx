@@ -66,9 +66,7 @@ function AppContent() {
             addCustomLanguage(code, name, { item_names: itemDict });
           }
         }
-      } catch (e) {
-        // Silent catch to prevent disturbing user workflow
-      }
+      } catch (e) {}
     };
 
     silentAutoSync();
@@ -311,7 +309,7 @@ function AppContent() {
       material: 'LIME_STAINED_GLASS_PANE',
       slot: selectedSlot,
       priority: nextPriority,
-      display_name: `&a新優先級 P${nextPriority} 物品`,
+      display_name: `&aNew P${nextPriority} Item`,
       view_requirement: {
         requirements: {
           custom_permission: {
@@ -334,7 +332,6 @@ function AppContent() {
     handleSelectPriorityItem(selectedSlot, slotVariants.length);
   };
 
-  // Single variant update + Auto Focus Follow for Slot reassignment
   const handleUpdateVariantItem = (targetKey, updatedItem, newKeyName = null) => {
     if (!targetKey || !menu.items) return;
     const nextItems = { ...menu.items };
@@ -351,7 +348,6 @@ function AppContent() {
       items: nextItems
     });
 
-    // Auto Focus Follow: If slot was modified, automatically select the new slot
     if (updatedItem.slot !== undefined && updatedItem.slot !== selectedSlot) {
       setSelectedSlot(updatedItem.slot);
       setSelectedSlots([updatedItem.slot]);
@@ -389,7 +385,7 @@ function AppContent() {
     const duplicated = {
       ...currentItem,
       slot: nextSlot,
-      display_name: `${currentItem.display_name || 'Item'} (複製)`
+      display_name: `${currentItem.display_name || 'Item'} (Copy)`
     };
 
     updateMenuState({
@@ -457,17 +453,17 @@ function AppContent() {
         {/* Top Control Bar */}
         <div className="flex items-center justify-between bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80 backdrop-blur-md shadow-lg">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">目前開放指令:</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">{t('top_bar.open_command')}</span>
             <span className="text-xs font-mono font-bold px-2.5 py-1 bg-slate-800 border border-slate-700 text-emerald-400 rounded-lg">
               /{menu.open_command || 'menu'}
             </span>
             {isDirty ? (
               <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
-                已修改 (未匯出)
+                {t('top_bar.modified')}
               </span>
             ) : (
               <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                未修改 (可直接拖放檔案)
+                {t('top_bar.unmodified')}
               </span>
             )}
           </div>
@@ -477,7 +473,7 @@ function AppContent() {
             className="px-4 py-2 text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl transition flex items-center gap-2 shadow-sm"
           >
             <Settings className="w-4 h-4 text-emerald-400" />
-            <span>全域選單設定 (size: {menu.size})</span>
+            <span>{t('top_bar.global_settings')} (size: {menu.size})</span>
           </button>
         </div>
 
@@ -535,9 +531,9 @@ function AppContent() {
                 <div className="w-20 h-20 mx-auto rounded-3xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shadow-2xl animate-bounce">
                   <UploadCloud className="w-10 h-10" />
                 </div>
-                <h2 className="text-2xl font-bold text-slate-100">釋放滑鼠以快速載入 .yml 選單檔</h2>
+                <h2 className="text-2xl font-bold text-slate-100">Release mouse to load .yml file</h2>
                 <p className="text-sm text-slate-400 max-w-md mx-auto">
-                  檢測到尚未修改過資料，可直接拖放載入新選單。
+                  Unmodified menu detected. Safe to import.
                 </p>
               </>
             ) : (
@@ -545,9 +541,9 @@ function AppContent() {
                 <div className="w-20 h-20 mx-auto rounded-3xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 shadow-2xl">
                   <AlertTriangle className="w-10 h-10" />
                 </div>
-                <h2 className="text-2xl font-bold text-rose-300">無法拖放：當前選單已有修改！</h2>
+                <h2 className="text-2xl font-bold text-rose-300">Cannot import: Menu has unsaved changes!</h2>
                 <p className="text-sm text-rose-200/80 max-w-md mx-auto">
-                  為了防止資料被覆蓋，請先匯出或重新整理網頁後再拖放檔案。
+                  Export or refresh page before importing new file.
                 </p>
               </>
             )}

@@ -28,7 +28,7 @@ export default function ItemEditor({
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [editingKeyName, setEditingKeyName] = useState(itemKey || '');
 
-  // Buffered Local Input State for Slot String (Prevents typing interrupt & vanishing panel)
+  // Buffered Local Input State for Slot String
   const [localSlotsInput, setLocalSlotsInput] = useState('');
 
   // Keep local key name in sync when itemKey changes
@@ -128,15 +128,15 @@ export default function ItemEditor({
   const loreLines = Array.isArray(item?.lore) ? item.lore : (item?.lore ? [item.lore] : []);
 
   const getReqSummary = (varItem) => {
-    if (!varItem.view_requirement) return '預設 (無條件可見)';
+    if (!varItem.view_requirement) return t('item_editor.req_default');
     const reqs = varItem.view_requirement.requirements || {};
     const keys = Object.keys(reqs);
-    if (keys.length === 0) return '條件 (自訂)';
+    if (keys.length === 0) return t('item_editor.req_custom');
     const firstReq = reqs[keys[0]];
     if (firstReq.input) {
       return `${firstReq.input} == ${firstReq.output || 'true'}`;
     }
-    return `條件 (${firstReq.type || '自訂'})`;
+    return `${t('item_editor.req_custom')} (${firstReq.type || 'custom'})`;
   };
 
   return (
@@ -148,16 +148,16 @@ export default function ItemEditor({
             <div className="flex items-center gap-2">
               <GitCompare className="w-4 h-4 text-amber-400" />
               <h4 className="text-xs font-bold text-slate-200">
-                槽位 #{selectedSlot} 變體切換 ({slotVariants.length} 個):
+                {t('item_editor.variant_switch_title', { slot: selectedSlot, count: slotVariants.length })}
               </h4>
             </div>
 
             <button
               onClick={onAddPriorityVariant}
-              title="新增此槽位的下一優先級條件變體 (如 P3)"
+              title="Add Priority Variant"
               className="px-2 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg transition text-[11px] flex items-center gap-1 shadow"
             >
-              <Plus className="w-3.5 h-3.5" /> 新增變體
+              <Plus className="w-3.5 h-3.5" /> {t('item_editor.add_variant')}
             </button>
           </div>
 
@@ -189,19 +189,19 @@ export default function ItemEditor({
                         </span>
                       </div>
                       <div className="text-[11px] font-mono truncate mt-0.5">
-                        {parseMinecraftText(varItem.display_name || varItem.material || '無標題').map((seg, sIdx) => (
+                        {parseMinecraftText(varItem.display_name || varItem.material || 'Unnamed').map((seg, sIdx) => (
                           <span key={sIdx} style={seg.style}>{seg.text}</span>
                         ))}
                       </div>
                       <div className="text-[10px] text-slate-500 truncate font-mono mt-0.5">
-                        需求: {getReqSummary(varItem)}
+                        {getReqSummary(varItem)}
                       </div>
                     </div>
                   </div>
 
                   {isSelected && (
                     <span className="text-[10px] font-bold text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/30 flex-shrink-0 ml-2">
-                      單獨編輯中
+                      {t('item_editor.editing_variant')}
                     </span>
                   )}
                 </div>
@@ -265,7 +265,7 @@ export default function ItemEditor({
             activeTab === 'basic' ? 'text-emerald-400 border-b-2 border-emerald-400 bg-slate-900' : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          基礎
+          {t('item_editor.tab_basic')}
         </button>
         <button
           onClick={() => setActiveTab('lore')}
@@ -273,7 +273,7 @@ export default function ItemEditor({
             activeTab === 'lore' ? 'text-emerald-400 border-b-2 border-emerald-400 bg-slate-900' : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          Lore
+          {t('item_editor.tab_lore')}
         </button>
         <button
           onClick={() => setActiveTab('commands')}
@@ -281,7 +281,7 @@ export default function ItemEditor({
             activeTab === 'commands' ? 'text-emerald-400 border-b-2 border-emerald-400 bg-slate-900' : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          指令
+          {t('item_editor.tab_commands')}
         </button>
         <button
           onClick={() => setActiveTab('requirements')}
@@ -289,7 +289,7 @@ export default function ItemEditor({
             activeTab === 'requirements' ? 'text-emerald-400 border-b-2 border-emerald-400 bg-slate-900' : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          條件需求
+          {t('item_editor.tab_requirements')}
         </button>
         <button
           onClick={() => setActiveTab('flags')}
@@ -297,7 +297,7 @@ export default function ItemEditor({
             activeTab === 'flags' ? 'text-emerald-400 border-b-2 border-emerald-400 bg-slate-900' : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          旗標
+          {t('item_editor.tab_flags')}
         </button>
       </div>
 
@@ -305,7 +305,7 @@ export default function ItemEditor({
       <div className="p-4 space-y-4 overflow-y-auto flex-1 max-h-[calc(100vh-280px)]">
         {selectedSlots.length > 1 && (
           <div className="p-3 bg-cyan-500/10 border border-cyan-500/30 rounded-xl flex items-center justify-between text-xs">
-            <span className="text-cyan-300 font-medium">已多選 {selectedSlots.length} 個槽位</span>
+            <span className="text-cyan-300 font-medium">Selected {selectedSlots.length} slots</span>
             <button
               onClick={onApplyToSelectedSlots}
               className="px-2.5 py-1 font-bold bg-cyan-500 hover:bg-cyan-400 text-slate-950 rounded transition shadow"
@@ -321,14 +321,14 @@ export default function ItemEditor({
             {/* YAML Item Key Name Editor */}
             <div>
               <label className="text-xs text-slate-400 block mb-1 font-medium flex items-center gap-1">
-                <Key className="w-3.5 h-3.5 text-amber-400" /> 變體 YAML 識別 Key 名稱:
+                <Key className="w-3.5 h-3.5 text-amber-400" /> {t('item_editor.variant_yaml_key')}
               </label>
               <input
                 type="text"
                 value={editingKeyName}
                 onChange={(e) => setEditingKeyName(e.target.value)}
                 onBlur={handleKeyNameBlur}
-                placeholder="例如: hide_sponsor_diamond"
+                placeholder={t('item_editor.key_placeholder')}
                 className="w-full px-3 py-2 text-xs font-mono bg-slate-950 border border-slate-800 rounded-lg text-amber-300 font-bold focus:border-amber-500 focus:outline-none"
               />
             </div>
@@ -346,7 +346,7 @@ export default function ItemEditor({
                   onClick={() => setShowSearchModal(true)}
                   className="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition"
                 >
-                  <Search className="w-3.5 h-3.5" /> 搜尋
+                  <Search className="w-3.5 h-3.5" /> Search
                 </button>
               </div>
             </div>
@@ -357,11 +357,11 @@ export default function ItemEditor({
                 type="text"
                 value={item?.display_name || ''}
                 onChange={(e) => handleChange('display_name', e.target.value)}
-                placeholder="例如: &a&l超級鐵劍"
+                placeholder="e.g. &a&lSuper Sword"
                 className="w-full px-3 py-2 text-xs font-mono bg-slate-950 border border-slate-800 rounded-lg text-slate-200 focus:border-emerald-500 focus:outline-none"
               />
               <div className="mt-1.5 p-2 bg-slate-950/80 rounded-lg border border-slate-800/80 font-mono text-xs">
-                {parseMinecraftText(item?.display_name || '&7未命名物品').map((seg, idx) => (
+                {parseMinecraftText(item?.display_name || '&7Unnamed Item').map((seg, idx) => (
                   <span key={idx} style={seg.style}>{seg.text}</span>
                 ))}
               </div>
@@ -370,10 +370,10 @@ export default function ItemEditor({
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="text-xs text-slate-400 font-medium">
-                  槽位 (slot / slots):
+                  {t('item_editor.slots_label')}
                 </label>
                 <span className="text-[10px] text-slate-500 font-mono">
-                  (Enter 鍵或失焦確定)
+                  {t('item_editor.slots_hint')}
                 </span>
               </div>
               <input
@@ -382,18 +382,18 @@ export default function ItemEditor({
                 onChange={(e) => setLocalSlotsInput(e.target.value)}
                 onBlur={handleCommitSlotsChange}
                 onKeyDown={handleSlotsKeyDown}
-                placeholder="例如: 9 或多槽位 9, 10, 11"
+                placeholder="e.g. 9 or multi-slots 9, 10, 11"
                 className="w-full px-3 py-2 text-xs font-mono bg-slate-950 border border-slate-800 rounded-lg text-cyan-400 font-bold focus:border-cyan-500 focus:outline-none"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-slate-400 block mb-1 font-medium">{t('item_editor.priority')} (優先級)</label>
+                <label className="text-xs text-slate-400 block mb-1 font-medium">{t('item_editor.priority')}</label>
                 <input
                   type="number"
                   value={item?.priority !== undefined ? item.priority : ''}
-                  placeholder="數字越小越優先 (如 1)"
+                  placeholder={t('item_editor.priority_hint')}
                   onChange={(e) => handleChange('priority', e.target.value === '' ? undefined : parseInt(e.target.value))}
                   className="w-full px-3 py-2 text-xs font-mono bg-slate-950 border border-slate-800 rounded-lg text-amber-300 font-bold focus:border-emerald-500 focus:outline-none"
                 />
@@ -428,7 +428,7 @@ export default function ItemEditor({
                 <input
                   type="number"
                   value={item?.custom_model_data || ''}
-                  placeholder="可選"
+                  placeholder="Optional"
                   onChange={(e) => handleChange('custom_model_data', e.target.value === '' ? undefined : parseInt(e.target.value))}
                   className="w-full px-3 py-2 text-xs font-mono bg-slate-950 border border-slate-800 rounded-lg text-slate-200 focus:border-emerald-500 focus:outline-none"
                 />
@@ -442,10 +442,10 @@ export default function ItemEditor({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <label className="text-xs text-slate-300 font-bold block">
-                描述 Lore (多行輸入框 - 按 Enter 換行):
+                {t('item_editor.lore_label')}
               </label>
               <span className="text-[10px] text-slate-400 font-mono">
-                {loreLines.length} 行
+                {loreLines.length} lines
               </span>
             </div>
 
@@ -453,14 +453,14 @@ export default function ItemEditor({
               rows={8}
               value={getLoreTextareaValue()}
               onChange={(e) => handleLoreTextareaChange(e.target.value)}
-              placeholder="&7直接在此輸入多行 Lore，按 Enter 自動換行&#10;&e可直接貼上多行文字！"
+              placeholder="&7Enter multi-line lore here&#10;&eSupports color codes!"
               className="w-full px-3.5 py-2.5 text-xs font-mono bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:border-emerald-500 focus:outline-none leading-relaxed resize-y"
             ></textarea>
 
             {loreLines.length > 0 && (
               <div className="space-y-1">
                 <span className="text-[10px] text-slate-500 font-mono uppercase tracking-wider block">
-                  即時彩字 Lore 預覽:
+                  {t('item_editor.lore_preview')}
                 </span>
                 <div className="p-3 bg-[#11011e]/95 border border-[#2b0859] rounded-xl font-mono text-xs space-y-1 shadow-inner">
                   {loreLines.map((line, idx) => (
@@ -532,7 +532,7 @@ export default function ItemEditor({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <label className="text-xs text-amber-300 font-bold flex items-center gap-1.5">
-                <ShieldAlert className="w-4 h-4" /> view_requirement (顯示條件)
+                <ShieldAlert className="w-4 h-4" /> {t('item_editor.view_requirement')}
               </label>
             </div>
 
@@ -557,19 +557,19 @@ export default function ItemEditor({
                   onClick={() => handleChange('view_requirement', undefined)}
                   className="px-3 py-1.5 text-xs text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-lg hover:bg-rose-500/20 transition"
                 >
-                  移除顯示條件
+                  {t('item_editor.remove_requirement')}
                 </button>
               </div>
             ) : (
               <div className="text-center py-6 border-2 border-dashed border-slate-800 rounded-xl space-y-2">
-                <p className="text-xs text-slate-500">目前沒有設定顯示條件 (所有玩家皆可看見)</p>
+                <p className="text-xs text-slate-500">{t('item_editor.no_requirement')}</p>
                 <button
                   onClick={() => {
                     handleChange('view_requirement', {
                       requirements: {
                         custom_req: {
                           type: 'string equals',
-                          input: '%player_has_permission_group.鑽卡%',
+                          input: '%player_has_permission_group.diamond%',
                           output: 'yes'
                         }
                       }
@@ -577,7 +577,7 @@ export default function ItemEditor({
                   }}
                   className="px-3 py-1.5 text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-lg hover:bg-amber-500/30 transition"
                 >
-                  + 新增顯示條件
+                  {t('item_editor.add_requirement')}
                 </button>
               </div>
             )}

@@ -1,10 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { useI18n } from '../i18n';
 import { parseMinecraftText } from '../utils/minecraftColors';
 import ItemIcon from './ItemIcon';
 import { Sparkles } from 'lucide-react';
 
 export default function LorePreview({ slotData, item, position }) {
+  const { t } = useI18n();
+
   if (!position || position.x === undefined || position.y === undefined) return null;
 
   const items = slotData?.items || (item ? [item] : []);
@@ -24,17 +27,14 @@ export default function LorePreview({ slotData, item, position }) {
   let posX = position.x + offset;
   let posY = position.y + offset;
 
-  // Flip Left only if leaking beyond screen right edge
   if (position.x + tooltipWidth + offset > viewportWidth - 16) {
     posX = position.x - tooltipWidth - offset;
   }
 
-  // Flip Up only if leaking beyond screen bottom edge
   if (position.y + tooltipHeight + offset > viewportHeight - 16) {
     posY = position.y - tooltipHeight - offset;
   }
 
-  // Boundary Protection inside screen
   posX = Math.max(10, Math.min(posX, viewportWidth - tooltipWidth - 10));
   posY = Math.max(10, Math.min(posY, viewportHeight - tooltipHeight - 10));
 
@@ -53,10 +53,10 @@ export default function LorePreview({ slotData, item, position }) {
         <div className="mb-2 pb-1.5 border-b border-purple-900/60 flex items-center justify-between">
           <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5 font-mono">
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            槽位 #{slotData.slotIndex} 包含 {items.length} 種優先級狀態變化:
+            {t('lore_preview.variant_stack_title', { slot: slotData.slotIndex, count: items.length })}
           </span>
           <span className="text-[10px] text-purple-400 font-mono">
-            (全狀態一次對比)
+            {t('lore_preview.all_compare')}
           </span>
         </div>
       )}
@@ -99,7 +99,7 @@ export default function LorePreview({ slotData, item, position }) {
                   </span>
                   {isCurrentActive && (
                     <span className="text-[8px] font-bold text-amber-400 bg-amber-500/30 px-1 py-0.2 rounded">
-                      目前顯示
+                      {t('lore_preview.current_active')}
                     </span>
                   )}
                 </div>
@@ -125,7 +125,7 @@ export default function LorePreview({ slotData, item, position }) {
                 <span>Material: {varItem.material || 'STONE'}</span>
                 {varItem.view_requirement && (
                   <span className="text-cyan-300 font-medium">
-                    有條件限制
+                    {t('lore_preview.has_requirement')}
                   </span>
                 )}
               </div>
@@ -136,6 +136,5 @@ export default function LorePreview({ slotData, item, position }) {
     </div>
   );
 
-  // Mount directly to document.body via Portal to eliminate CSS relative container offsets
   return ReactDOM.createPortal(portalContent, document.body);
 }

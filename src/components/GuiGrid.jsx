@@ -72,7 +72,7 @@ export default function GuiGrid({
   const handleContextMenu = (e, slotIndex) => {
     e.preventDefault();
     e.stopPropagation();
-    setHoveredSlotData(null); // Instantly hide hover tooltip
+    setHoveredSlotData(null);
     onSelectSlot(slotIndex);
 
     setContextMenu({
@@ -83,7 +83,6 @@ export default function GuiGrid({
   };
 
   const handleSlotHover = (e, slotIndex) => {
-    // If context menu is open, suppress hover tooltip
     if (contextMenu) {
       setHoveredSlotData(null);
       return;
@@ -180,12 +179,10 @@ export default function GuiGrid({
     let posX = contextMenu.x;
     let posY = contextMenu.y;
 
-    // Flip Left if leaking right
     if (posX + menuWidth > viewportWidth - 10) {
       posX = contextMenu.x - menuWidth;
     }
 
-    // Flip Up if leaking bottom
     if (posY + menuHeight > viewportHeight - 10) {
       posY = contextMenu.y - menuHeight;
     }
@@ -199,7 +196,7 @@ export default function GuiGrid({
         className="fixed z-[9999999] bg-slate-900 border-2 border-slate-700/90 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] py-1.5 min-w-[160px] text-xs font-mono backdrop-blur-md animate-in fade-in zoom-in-95 duration-100 select-none"
       >
         <div className="px-3 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-800 mb-1">
-          Slot #{contextMenu.slotIndex} 選項
+          Slot #{contextMenu.slotIndex} {t('gui_grid.context_options')}
         </div>
 
         <button
@@ -209,7 +206,7 @@ export default function GuiGrid({
           }}
           className="w-full px-3 py-1.5 text-left text-slate-200 hover:bg-emerald-500/20 hover:text-emerald-300 flex items-center gap-2 transition"
         >
-          <Copy className="w-3.5 h-3.5 text-emerald-400" /> 複製 (Copy)
+          <Copy className="w-3.5 h-3.5 text-emerald-400" /> {t('gui_grid.context_copy')}
         </button>
 
         <button
@@ -219,7 +216,7 @@ export default function GuiGrid({
           }}
           className="w-full px-3 py-1.5 text-left text-slate-200 hover:bg-amber-500/20 hover:text-amber-300 flex items-center gap-2 transition"
         >
-          <Scissors className="w-3.5 h-3.5 text-amber-400" /> 剪下 (Cut)
+          <Scissors className="w-3.5 h-3.5 text-amber-400" /> {t('gui_grid.context_cut')}
         </button>
 
         <button
@@ -234,7 +231,7 @@ export default function GuiGrid({
               : 'text-slate-600 cursor-not-allowed'
           }`}
         >
-          <Clipboard className="w-3.5 h-3.5 text-cyan-400" /> 貼上 (Paste)
+          <Clipboard className="w-3.5 h-3.5 text-cyan-400" /> {t('gui_grid.context_paste')}
         </button>
 
         <div className="border-t border-slate-800 my-1"></div>
@@ -246,7 +243,7 @@ export default function GuiGrid({
           }}
           className="w-full px-3 py-1.5 text-left text-rose-400 hover:bg-rose-500/20 flex items-center gap-2 transition font-bold"
         >
-          <Trash2 className="w-3.5 h-3.5 text-rose-400" /> 刪除 (Delete)
+          <Trash2 className="w-3.5 h-3.5 text-rose-400" /> {t('gui_grid.context_delete')}
         </button>
       </div>,
       document.body
@@ -270,7 +267,7 @@ export default function GuiGrid({
             </h2>
             <p className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
               <Move className="w-3.5 h-3.5 text-cyan-400" />
-              右鍵可選複製/剪下/貼上/刪除 | 拖曳至下方垃圾桶可快速刪除
+              {t('gui_grid.drag_hint')}
             </p>
           </div>
         </div>
@@ -282,7 +279,7 @@ export default function GuiGrid({
             className="px-3 py-1.5 text-xs font-bold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 rounded-lg transition flex items-center gap-1.5"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            {useClassicTheme ? '切換暗黑 UI' : '切換 MC 100% 原生 GUI'}
+            {useClassicTheme ? t('gui_grid.switch_dark_ui') : t('gui_grid.switch_mc_gui')}
           </button>
 
           {selectedSlots.length > 1 && (
@@ -358,7 +355,7 @@ export default function GuiGrid({
                           const nextVariantIdx = (activeVariantIdx + 1) % allSlotItems.length;
                           onSelectPriorityItem(slotIndex, nextVariantIdx);
                         }}
-                        title={`此槽位包含 ${allSlotItems.length} 個優先級變體，點擊切換`}
+                        title={t('gui_grid.variant_switch_tooltip', { count: allSlotItems.length })}
                         className="absolute top-0.5 right-0.5 text-[8px] font-mono font-bold bg-amber-500 text-slate-950 px-1 rounded-none shadow cursor-pointer z-20"
                       >
                         P{activeVariantIdx + 1}/{allSlotItems.length}
@@ -423,7 +420,7 @@ export default function GuiGrid({
                         const nextVariantIdx = (activeVariantIdx + 1) % allSlotItems.length;
                         onSelectPriorityItem(slotIndex, nextVariantIdx);
                       }}
-                      title={`此槽位包含 ${allSlotItems.length} 個優先級變體，點擊切換`}
+                      title={t('gui_grid.variant_switch_tooltip', { count: allSlotItems.length })}
                       className="absolute top-1 right-1 text-[9px] font-mono font-extrabold bg-amber-500 text-slate-950 px-1 rounded-sm shadow-md cursor-pointer hover:bg-amber-400 hover:scale-110 transition z-20 flex items-center gap-0.5"
                     >
                       P{activeVariantIdx + 1}/{allSlotItems.length}
@@ -463,15 +460,15 @@ export default function GuiGrid({
         >
           <Trash2 className={`w-4 h-4 ${isDragOverTrash ? 'text-rose-400 animate-bounce' : 'text-slate-500'}`} />
           <span className="text-xs font-bold tracking-wide">
-            {isDragOverTrash ? '放開滑鼠以刪除此物品' : '拖曳物品至此處垃圾桶即可刪除'}
+            {isDragOverTrash ? t('gui_grid.trash_release') : t('gui_grid.trash_hint')}
           </span>
         </div>
       </div>
 
-      {/* Render Context Menu Portal to document.body with higher z-index & auto-flip */}
+      {/* Render Context Menu Portal to document.body */}
       {renderContextMenuPortal()}
 
-      {/* Real-time Hover Lore Preview Overlay (Suppressed when Context Menu is active) */}
+      {/* Real-time Hover Lore Preview Overlay */}
       {!contextMenu && hoveredSlotData && (
         <LorePreview
           slotData={hoveredSlotData}
