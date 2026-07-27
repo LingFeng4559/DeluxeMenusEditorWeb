@@ -4,7 +4,7 @@ import { parseMinecraftText } from '../utils/minecraftColors';
 import ItemIcon from './ItemIcon';
 import {
   Edit3, Trash2, Copy, Plus, Search, Terminal, Eye, Flag,
-  ChevronRight, Sparkles, Check, Hash, Layers, ShieldAlert, GitCompare, Key
+  ChevronRight, Sparkles, Check, Hash, Layers, ShieldAlert, GitCompare, Key, Lock, DollarSign, Award, Users, Zap
 } from 'lucide-react';
 import MaterialSearchModal from './MaterialSearchModal';
 
@@ -28,15 +28,17 @@ export default function ItemEditor({
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [editingKeyName, setEditingKeyName] = useState(itemKey || '');
 
+  // Quick Permission Template Input
+  const [quickPermissionInput, setQuickPermissionInput] = useState('menu.vip.use');
+  const [quickMoneyInput, setQuickMoneyInput] = useState(100);
+
   // Buffered Local Input State for Slot String
   const [localSlotsInput, setLocalSlotsInput] = useState('');
 
-  // Keep local key name in sync when itemKey changes
   useEffect(() => {
     setEditingKeyName(itemKey || '');
   }, [itemKey]);
 
-  // Keep buffered slot input in sync when selected item changes
   useEffect(() => {
     if (item) {
       const val = Array.isArray(item.slots) ? item.slots.join(', ') : (item.slot !== undefined ? String(item.slot) : String(selectedSlot));
@@ -73,7 +75,6 @@ export default function ItemEditor({
     }
   };
 
-  // Commit Slot changes ONLY on Blur or Enter key press
   const handleCommitSlotsChange = () => {
     if (!localSlotsInput || !localSlotsInput.trim()) return;
 
@@ -133,10 +134,50 @@ export default function ItemEditor({
     const keys = Object.keys(reqs);
     if (keys.length === 0) return t('item_editor.req_custom');
     const firstReq = reqs[keys[0]];
+    if (firstReq.type === 'has permission' || firstReq.permission) {
+      return `🔑 Perm: ${firstReq.permission || 'custom'}`;
+    }
     if (firstReq.input) {
       return `${firstReq.input} == ${firstReq.output || 'true'}`;
     }
     return `${t('item_editor.req_custom')} (${firstReq.type || 'custom'})`;
+  };
+
+  // Quick Preset Handlers
+  const handleApplyPermissionTemplate = (permStr) => {
+    const nodeName = permStr.trim() || 'your.custom.permission';
+    handleChange('view_requirement', {
+      requirements: {
+        permission_check: {
+          type: 'has permission',
+          permission: nodeName
+        }
+      }
+    });
+  };
+
+  const handleApplyMoneyTemplate = (amountVal) => {
+    const amt = parseInt(amountVal) || 100;
+    handleChange('view_requirement', {
+      requirements: {
+        money_check: {
+          type: 'has money',
+          amount: amt
+        }
+      }
+    });
+  };
+
+  const handleApplyGroupTemplate = (groupName) => {
+    handleChange('view_requirement', {
+      requirements: {
+        group_check: {
+          type: 'string equals',
+          input: '%vault_group%',
+          output: groupName || 'admin'
+        }
+      }
+    });
   };
 
   return (
@@ -161,7 +202,7 @@ export default function ItemEditor({
             </button>
           </div>
 
-          {/* Comparison Cards Carousel/Stack */}
+          {/* Comparison Cards Stack */}
           <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
             {slotVariants.map((varItem, idx) => {
               const isSelected = idx === activeVariantIndex;
@@ -234,7 +275,6 @@ export default function ItemEditor({
           </div>
         </div>
 
-        {/* Action icons */}
         <div className="flex items-center gap-1">
           {item && (
             <>
@@ -318,7 +358,6 @@ export default function ItemEditor({
         {/* TAB 1: BASIC PROPERTIES */}
         {activeTab === 'basic' && (
           <div className="space-y-3">
-            {/* YAML Item Key Name Editor */}
             <div>
               <label className="text-xs text-slate-400 block mb-1 font-medium flex items-center gap-1">
                 <Key className="w-3.5 h-3.5 text-amber-400" /> {t('item_editor.variant_yaml_key')}
@@ -437,7 +476,7 @@ export default function ItemEditor({
           </div>
         )}
 
-        {/* TAB 2: MULTI-LINE LORE TEXTAREA EDITOR */}
+        {/* TAB 2: LORE TEXTAREA */}
         {activeTab === 'lore' && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -527,7 +566,7 @@ export default function ItemEditor({
           </div>
         )}
 
-        {/* TAB 4: VIEW REQUIREMENTS */}
+        {/* TAB 4: VIEW REQUIREMENTS WITH ONE-CLICK PRESET TEMPLATES */}
         {activeTab === 'requirements' && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -536,10 +575,79 @@ export default function ItemEditor({
               </label>
             </div>
 
+            {/* ⚡ ONE-CLICK QUICK PRESET TEMPLATES */}
+            <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800 space-y-2.5">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400">
+                <Zap className="w-3.5 h-3.5 fill-amber-400" />
+                <span>一鍵快速生成常見顯示條件範本:</span>
+              </div>
+
+              {/* Preset 1: Permission Check */}
+              <div className="space-y-1.5 pt-1">
+                <label className="text-[11px] text-slate-400 font-medium flex items-center gap-1">
+                  <Lock className="w-3 h-3 text-emerald-400" /> 1. 玩家權限判斷 (has permission)
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={quickPermissionInput}
+                    onChange={(e) => setQuickPermissionInput(e.target.value)}
+                    placeholder="e.g. deluxemenus.vip.use"
+                    className="flex-1 px-2.5 py-1.5 text-xs font-mono bg-slate-900 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none"
+                  />
+                  <button
+                    onClick={() => handleApplyPermissionTemplate(quickPermissionInput)}
+                    className="px-3 py-1.5 text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-lg transition shadow flex items-center gap-1"
+                  >
+                    <Check className="w-3.5 h-3.5" /> 套用權限
+                  </button>
+                </div>
+              </div>
+
+              {/* Preset 2: Vault Money Check */}
+              <div className="space-y-1.5 pt-1 border-t border-slate-900">
+                <label className="text-[11px] text-slate-400 font-medium flex items-center gap-1">
+                  <DollarSign className="w-3 h-3 text-cyan-400" /> 2. 玩家金錢餘額判斷 (has money)
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    value={quickMoneyInput}
+                    onChange={(e) => setQuickMoneyInput(e.target.value)}
+                    placeholder="100"
+                    className="w-24 px-2.5 py-1.5 text-xs font-mono bg-slate-900 border border-slate-800 rounded-lg text-cyan-400 focus:outline-none"
+                  />
+                  <button
+                    onClick={() => handleApplyMoneyTemplate(quickMoneyInput)}
+                    className="flex-1 px-3 py-1.5 text-xs font-bold bg-cyan-500 hover:bg-cyan-400 text-slate-950 rounded-lg transition shadow flex items-center justify-center gap-1"
+                  >
+                    <Check className="w-3.5 h-3.5" /> 套用金錢判斷
+                  </button>
+                </div>
+              </div>
+
+              {/* Preset 3: LuckPerms Group Check */}
+              <div className="pt-1 border-t border-slate-900 flex gap-2">
+                <button
+                  onClick={() => handleApplyGroupTemplate('admin')}
+                  className="flex-1 py-1.5 px-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/40 rounded-lg text-[11px] font-bold transition flex items-center justify-center gap-1"
+                >
+                  <Users className="w-3 h-3" /> 僅限 Admin 權限組
+                </button>
+                <button
+                  onClick={() => handleApplyGroupTemplate('vip')}
+                  className="flex-1 py-1.5 px-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-lg text-[11px] font-bold transition flex items-center justify-center gap-1"
+                >
+                  <Award className="w-3 h-3" /> 僅限 VIP 權限組
+                </button>
+              </div>
+            </div>
+
+            {/* Current View Requirement JSON Editor */}
             {item?.view_requirement ? (
               <div className="space-y-3">
                 <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800 font-mono text-xs text-slate-300 space-y-2">
-                  <span className="text-[11px] text-slate-500 uppercase tracking-wider block">Requirements:</span>
+                  <span className="text-[11px] text-slate-500 uppercase tracking-wider block">當前 view_requirement YAML/JSON 結構:</span>
                   <textarea
                     rows={6}
                     value={JSON.stringify(item.view_requirement, null, 2)}
@@ -561,24 +669,8 @@ export default function ItemEditor({
                 </button>
               </div>
             ) : (
-              <div className="text-center py-6 border-2 border-dashed border-slate-800 rounded-xl space-y-2">
+              <div className="text-center py-4 border-2 border-dashed border-slate-800 rounded-xl space-y-2">
                 <p className="text-xs text-slate-500">{t('item_editor.no_requirement')}</p>
-                <button
-                  onClick={() => {
-                    handleChange('view_requirement', {
-                      requirements: {
-                        custom_req: {
-                          type: 'string equals',
-                          input: '%player_has_permission_group.diamond%',
-                          output: 'yes'
-                        }
-                      }
-                    });
-                  }}
-                  className="px-3 py-1.5 text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-lg hover:bg-amber-500/30 transition"
-                >
-                  {t('item_editor.add_requirement')}
-                </button>
               </div>
             )}
           </div>
