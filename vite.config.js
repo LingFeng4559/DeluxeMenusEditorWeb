@@ -6,4 +6,8 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   base: './', // Relative path for GitHub Pages deployment
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+  }
 });
