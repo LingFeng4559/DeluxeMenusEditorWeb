@@ -81,6 +81,14 @@ function AppContent() {
     if (markAsDirty) setIsDirty(true);
   };
 
+  // Direct Inline Update for menu_title
+  const handleUpdateMenuTitle = (newTitle) => {
+    updateMenuState({
+      ...menu,
+      menu_title: newTitle
+    });
+  };
+
   // Sync YAML text to menu state
   const handleYamlChange = (newYamlText, markAsDirty = true) => {
     setYamlText(newYamlText);
@@ -495,6 +503,7 @@ function AppContent() {
             onCopySlotItem={handleCopySlotItem}
             onCutSlotItem={handleCutSlotItem}
             onPasteItemToSlot={handlePasteItemToSlot}
+            onUpdateMenuTitle={handleUpdateMenuTitle}
           />
 
           {/* Right Item Property Editor */}

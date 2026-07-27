@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { useI18n } from '../i18n';
 import { parseMinecraftText } from '../utils/minecraftColors';
 import ItemIcon from './ItemIcon';
-import { Layers, Info, Sparkles, Copy, Scissors, Clipboard, Trash2, Move } from 'lucide-react';
+import { Layers, Info, Sparkles, Copy, Scissors, Clipboard, Trash2, Move, Edit3, Check } from 'lucide-react';
 import LorePreview from './LorePreview';
 
 export default function GuiGrid({
@@ -20,13 +20,18 @@ export default function GuiGrid({
   onDeleteSlotItems,
   onCopySlotItem,
   onCutSlotItem,
-  onPasteItemToSlot
+  onPasteItemToSlot,
+  onUpdateMenuTitle
 }) {
   const { t } = useI18n();
   const [hoveredSlotData, setHoveredSlotData] = useState(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [useClassicTheme, setUseClassicTheme] = useState(true);
   const [dragOverSlot, setDragOverSlot] = useState(null);
+
+  // Direct Inline Editing state for menu_title
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [titleInput, setTitleInput] = useState(menu.menu_title || menu.title || 'Chest');
 
   // Context Menu state { x, y, slotIndex }
   const [contextMenu, setContextMenu] = useState(null);
@@ -36,6 +41,24 @@ export default function GuiGrid({
 
   const size = Math.max(9, Math.min(54, Number(menu.size) || 54));
   const slotArray = Array.from({ length: size }, (_, i) => i);
+
+  // Sync titleInput when menu.menu_title changes
+  useEffect(() => {
+    setTitleInput(menu.menu_title || menu.title || 'Chest');
+  }, [menu.menu_title, menu.title]);
+
+  const handleCommitTitle = () => {
+    setIsEditingTitle(false);
+    if (onUpdateMenuTitle) {
+      onUpdateMenuTitle(titleInput);
+    }
+  };
+
+  const handleTitleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleCommitTitle();
+    }
+  };
 
   // Close context menu on outside click
   useEffect(() => {
@@ -68,7 +91,6 @@ export default function GuiGrid({
     }
   };
 
-  // Right-click Context Menu trigger with instant Tooltip suppression
   const handleContextMenu = (e, slotIndex) => {
     e.preventDefault();
     e.stopPropagation();
@@ -107,7 +129,6 @@ export default function GuiGrid({
     setHoveredSlotData(null);
   };
 
-  // Drag & Drop Item between Slots
   const handleDragStart = (e, slotIndex) => {
     e.dataTransfer.setData('text/plain', String(slotIndex));
     e.dataTransfer.effectAllowed = 'move';
@@ -140,7 +161,6 @@ export default function GuiGrid({
     }
   };
 
-  // Trash Zone Drag & Drop Handlers
   const handleTrashDragOver = (e) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
@@ -164,9 +184,6 @@ export default function GuiGrid({
     }
   };
 
-  const menuTitle = menu.title || 'Chest';
-
-  // Calculate Context Menu Portal Position with strict Viewport Boundary Flip
   const renderContextMenuPortal = () => {
     if (!contextMenu) return null;
 
@@ -298,15 +315,47 @@ export default function GuiGrid({
         {useClassicTheme ? (
           /* 100% AUTHENTIC MINECRAFT GUI CHEST CONTAINER */
           <div className="bg-[#c6c6c6] border-4 border-t-[#ffffff] border-l-[#ffffff] border-r-[#555555] border-b-[#555555] p-3 shadow-2xl font-mono select-none max-w-full overflow-x-auto rounded-sm">
-            {/* Minecraft Title Header */}
+            {/* Direct Interactive Title Header */}
             <div className="mb-2 px-1 text-[#404040] font-bold text-sm leading-tight flex items-center justify-between">
-              <div className="flex items-center gap-1">
-                {parseMinecraftText(menuTitle).map((seg, idx) => (
-                  <span key={idx} style={seg.style} className="drop-shadow-none">
-                    {seg.text}
-                  </span>
-                ))}
+              <div className="flex items-center gap-1.5 relative group">
+                {isEditingTitle ? (
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="text"
+                      value={titleInput}
+                      onChange={(e) => setTitleInput(e.target.value)}
+                      onBlur={handleCommitTitle}
+                      onKeyDown={handleTitleKeyDown}
+                      autoFocus
+                      placeholder="e.g. &6&l選單主介面"
+                      className="px-2 py-0.5 text-xs font-mono bg-slate-900 text-amber-300 border border-amber-500/80 rounded focus:outline-none shadow-inner min-w-[200px]"
+                    />
+                    <button
+                      onClick={handleCommitTitle}
+                      title="確定修改標題"
+                      className="p-1 bg-emerald-500 text-slate-950 rounded hover:bg-emerald-400 transition"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => setIsEditingTitle(true)}
+                    title="點擊直接原地修改選單標題 (menu_title)"
+                    className="flex items-center gap-1.5 cursor-pointer px-1 py-0.5 rounded hover:bg-[#b0b0b0]/50 transition group/title border border-transparent hover:border-[#8b8b8b]"
+                  >
+                    <div className="flex items-center gap-1">
+                      {parseMinecraftText(menu.menu_title || menu.title || 'Chest').map((seg, idx) => (
+                        <span key={idx} style={seg.style} className="drop-shadow-none">
+                          {seg.text}
+                        </span>
+                      ))}
+                    </div>
+                    <Edit3 className="w-3.5 h-3.5 text-[#555555] opacity-50 group-hover/title:opacity-100 transition" />
+                  </div>
+                )}
               </div>
+
               <span className="text-[10px] text-[#555555] font-normal">
                 open: /{menu.open_command || 'menu'}
               </span>
@@ -342,12 +391,10 @@ export default function GuiGrid({
                         : ''
                     }`}
                   >
-                    {/* Slot Index overlay */}
                     <span className="absolute top-0.5 left-1 text-[9px] font-mono text-[#555555] opacity-70 pointer-events-none">
                       {slotIndex}
                     </span>
 
-                    {/* Priority Multi-variant Badge */}
                     {allSlotItems.length > 1 && (
                       <span
                         onClick={(e) => {
@@ -362,7 +409,6 @@ export default function GuiGrid({
                       </span>
                     )}
 
-                    {/* Item Icon & Amount */}
                     {currentActiveItem && (
                       <div className="relative flex items-center justify-center w-full h-full p-1.5 pointer-events-none">
                         <ItemIcon material={currentActiveItem.material} className="w-8 h-8" />
