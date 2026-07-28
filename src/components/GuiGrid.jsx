@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { useI18n } from '../i18n';
 import { parseMinecraftText } from '../utils/minecraftColors';
@@ -8,6 +8,7 @@ import LorePreview from './LorePreview';
 
 export default function GuiGrid({
   menu,
+  slotItemsMap,          // PERF-1: Pre-built Map<slotIndex, ItemArray[]> from App.jsx useMemo
   selectedSlot,
   selectedSlots,
   activePriorityMap,
@@ -25,7 +26,9 @@ export default function GuiGrid({
 }) {
   const { t } = useI18n();
   const [hoveredSlotData, setHoveredSlotData] = useState(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  // BUG-2 Fix: Use ref for mousePos to avoid re-rendering 54 slots on every mouse move
+  const mousePosRef = useRef({ x: 0, y: 0 });
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const [useClassicTheme, setUseClassicTheme] = useState(true);
   const [dragOverSlot, setDragOverSlot] = useState(null);
 
@@ -67,20 +70,21 @@ export default function GuiGrid({
     return () => window.removeEventListener('click', handleClickOutside);
   }, []);
 
-  const getItemsAtSlot = (slotIndex) => {
+  // PERF-1: O(1) slot lookup using pre-built Map from App.jsx useMemo
+  const getItemsAtSlot = useCallback((slotIndex) => {
+    if (slotItemsMap && slotItemsMap.has(slotIndex)) {
+      return slotItemsMap.get(slotIndex);
+    }
+    // Fallback if slotItemsMap not yet available
     if (!menu.items) return [];
     const items = [];
     for (const [key, item] of Object.entries(menu.items)) {
       if (!item) continue;
-      if (item.slot === slotIndex) {
-        items.push({ key, ...item });
-      } else if (Array.isArray(item.slots) && item.slots.includes(slotIndex)) {
-        items.push({ key, ...item });
-      }
+      if (item.slot === slotIndex) items.push({ key, ...item });
+      else if (Array.isArray(item.slots) && item.slots.includes(slotIndex)) items.push({ key, ...item });
     }
-    items.sort((a, b) => (a.priority || 999) - (b.priority || 999));
-    return items;
-  };
+    return items.sort((a, b) => (a.priority || 999) - (b.priority || 999));
+  }, [slotItemsMap, menu.items]);
 
   const handleSlotClick = (e, slotIndex) => {
     setContextMenu(null);
@@ -110,11 +114,15 @@ export default function GuiGrid({
       return;
     }
 
-    setMousePos({ x: e.clientX, y: e.clientY });
+    // BUG-2 Fix: Update ref without triggering re-render of 54 slots
+    mousePosRef.current = { x: e.clientX, y: e.clientY };
+
     const allItems = getItemsAtSlot(slotIndex);
     const activeIdx = activePriorityMap[slotIndex] || 0;
 
     if (allItems.length > 0) {
+      // Only update tooltip position state when hovering a new slot with items
+      setTooltipPos({ x: e.clientX, y: e.clientY });
       setHoveredSlotData({
         slotIndex,
         items: allItems,
@@ -514,11 +522,11 @@ export default function GuiGrid({
       {/* Render Context Menu Portal to document.body */}
       {renderContextMenuPortal()}
 
-      {/* Real-time Hover Lore Preview Overlay */}
+      {/* BUG-2 Fix: Use tooltipPos (only updates on slot-enter) instead of mousePos (updates every mousemove) */}
       {!contextMenu && hoveredSlotData && (
         <LorePreview
           slotData={hoveredSlotData}
-          position={mousePos}
+          position={tooltipPos}
         />
       )}
     </div>

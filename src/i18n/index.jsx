@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import zh_TW from './locales/zh_TW.json';
 import en from './locales/en.json';
 
@@ -84,15 +84,21 @@ export const I18nProvider = ({ children }) => {
     return val || keyPath;
   };
 
+  // useMemo: 避免 context value 每次重渲染產生新物件，防止所有消費者無謂重繪
+  const contextValue = useMemo(() => ({
+    currentLang,
+    setCurrentLang,
+    availableLocales,
+    addCustomLocale,
+    // BUG-1 修復：加入別名，讓 App.jsx 與 CustomLangModal.jsx 的舊呼叫不再崩潰
+    addCustomLanguage: addCustomLocale,
+    removeCustomLocale,
+    t
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [currentLang, availableLocales]);
+
   return (
-    <I18nContext.Provider value={{
-      currentLang,
-      setCurrentLang,
-      availableLocales,
-      addCustomLocale,
-      removeCustomLocale,
-      t
-    }}>
+    <I18nContext.Provider value={contextValue}>
       {children}
     </I18nContext.Provider>
   );

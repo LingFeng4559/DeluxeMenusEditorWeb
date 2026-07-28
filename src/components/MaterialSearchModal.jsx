@@ -1,41 +1,64 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useI18n } from '../i18n';
 import { getAllMinecraftItems } from '../utils/itemDatabase';
 import ItemIcon from './ItemIcon';
 import { X, Search, Box, Sparkles, Globe2, PlusCircle } from 'lucide-react';
+
+// PERF-3: Custom debounce hook to avoid laggy search on every keystroke
+function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  const timerRef = useRef(null);
+  useEffect(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(timerRef.current);
+  }, [value, delay]);
+  return debouncedValue;
+}
 
 export default function MaterialSearchModal({ onClose, onSelect }) {
   const { t, currentLang, availableLocales } = useI18n();
   const [searchTerm, setSearchTerm] = useState('');
   const [customMaterial, setCustomMaterial] = useState('');
 
+  // PERF-3: Debounce search input — only filter after 200ms of inactivity
+  const debouncedSearch = useDebounce(searchTerm, 200);
+
   const activeLocaleData = availableLocales[currentLang]?.data || {};
   const customItemNames = activeLocaleData.item_names || {};
 
-  const allItems = getAllMinecraftItems(currentLang, customItemNames);
+  // PERF-3: Build the full item list only once when lang/custom names change (not on every keystroke!)
+  const allItems = useMemo(
+    () => getAllMinecraftItems(currentLang, customItemNames),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [currentLang, JSON.stringify(Object.keys(customItemNames))]
+  );
 
-  const rawQuery = searchTerm.trim().toUpperCase().replace(/\s+/g, '_');
+  const rawQuery = debouncedSearch.trim().toUpperCase().replace(/\s+/g, '_');
 
-  const filtered = allItems.filter((item) => {
-    const query = searchTerm.trim().toLowerCase();
-    if (!query) return true;
-    return item.searchableText.includes(query);
-  });
+  // PERF-3: Memoize filtered results — recalculate only when allItems or debouncedSearch changes
+  const filtered = useMemo(() => {
+    const query = debouncedSearch.trim().toLowerCase();
+    if (!query) return allItems;
+    return allItems.filter((item) => item.searchableText.includes(query));
+  }, [allItems, debouncedSearch]);
 
   // Dynamic Item Fallback if search term doesn't exactly match any ID in database
   const hasExactMatch = filtered.some(i => i.id === rawQuery);
 
-  if (rawQuery && !hasExactMatch && rawQuery.length >= 2) {
-    filtered.unshift({
-      id: rawQuery,
-      name: rawQuery.replace(/_/g, ' '),
-      zhName: `自訂/最新 Material (${rawQuery})`,
-      localName: rawQuery,
-      isDynamic: true
-    });
-  }
-
-  const displayedItems = filtered.slice(0, 84);
+  const displayedItems = useMemo(() => {
+    const list = [...filtered];
+    if (rawQuery && !hasExactMatch && rawQuery.length >= 2) {
+      list.unshift({
+        id: rawQuery,
+        name: rawQuery.replace(/_/g, ' '),
+        zhName: `自訂/最新 Material (${rawQuery})`,
+        localName: rawQuery,
+        isDynamic: true
+      });
+    }
+    return list.slice(0, 84);
+  }, [filtered, rawQuery, hasExactMatch]);
 
   const handleCustomSubmit = (e) => {
     e.preventDefault();

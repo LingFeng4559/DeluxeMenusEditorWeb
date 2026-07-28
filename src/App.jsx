@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { I18nProvider, useI18n } from './i18n';
 import Header from './components/Header';
 import GuiGrid from './components/GuiGrid';
@@ -35,6 +35,27 @@ function AppContent() {
 
   // Modals
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+
+  // PERF-1: Pre-build slotItemsMap once per menu.items change (O(1) lookup instead of O(N×M) per render)
+  const slotItemsMap = useMemo(() => {
+    const map = new Map();
+    if (!menu.items) return map;
+    for (const [key, item] of Object.entries(menu.items)) {
+      if (!item) continue;
+      const slots = Array.isArray(item.slots) ? item.slots
+        : (item.slot !== undefined ? [item.slot] : []);
+      for (const s of slots) {
+        if (!map.has(s)) map.set(s, []);
+        map.get(s).push({ key, ...item });
+      }
+    }
+    // Sort each slot's items by priority ascending
+    map.forEach(arr => arr.sort((a, b) => (a.priority || 999) - (b.priority || 999)));
+    return map;
+  }, [menu.items]);
+
+  // PERF-2: Debounce ref for YAML parse — avoids full parse on every keystroke
+  const yamlParseDebounceRef = useRef(null);
 
   // Background Automatic Silent Asset & i18n Sync on App Launch
   useEffect(() => {
@@ -89,18 +110,34 @@ function AppContent() {
     });
   };
 
-  // Sync YAML text to menu state
+  // Sync YAML text to menu state — PERF-2: Debounced 300ms to avoid parsing every keystroke
   const handleYamlChange = (newYamlText, markAsDirty = true) => {
     setYamlText(newYamlText);
-    const { menu: parsedMenu, error } = parseYamlToMenu(newYamlText);
-    if (error) {
-      setYamlError(error);
-    } else if (parsedMenu) {
-      setMenu(parsedMenu);
-      setYamlError(null);
-    }
     if (markAsDirty) setIsDirty(true);
+
+    // Clear previous debounce timer
+    if (yamlParseDebounceRef.current) clearTimeout(yamlParseDebounceRef.current);
+
+    // If called with markAsDirty=false (import/load), parse immediately
+    if (!markAsDirty) {
+      const { menu: parsedMenu, error } = parseYamlToMenu(newYamlText);
+      if (error) { setYamlError(error); }
+      else if (parsedMenu) { setMenu(parsedMenu); setYamlError(null); }
+      return;
+    }
+
+    // Debounce user typing: wait 300ms before parsing
+    yamlParseDebounceRef.current = setTimeout(() => {
+      const { menu: parsedMenu, error } = parseYamlToMenu(newYamlText);
+      if (error) {
+        setYamlError(error);
+      } else if (parsedMenu) {
+        setMenu(parsedMenu);
+        setYamlError(null);
+      }
+    }, 300);
   };
+
 
   // Global Drag & Drop Handlers for YAML files
   useEffect(() => {
@@ -487,9 +524,10 @@ function AppContent() {
 
         {/* Center Grid + Right Property Editor Split View */}
         <div className="flex-1 flex gap-6 min-h-[500px]">
-          {/* Left / Center GUI Grid */}
+          {/* Left / Center GUI Grid — PERF-1: slotItemsMap precomputed in useMemo */}
           <GuiGrid
             menu={menu}
+            slotItemsMap={slotItemsMap}
             selectedSlot={selectedSlot}
             selectedSlots={selectedSlots}
             activePriorityMap={activePriorityMap}

@@ -1,4 +1,5 @@
 // Minecraft Color Code and formatting utility
+// PERF-5: Added LRU cache (max 200 entries) to avoid re-parsing identical strings
 
 const COLOR_MAP = {
   '0': '#000000', // Black
@@ -19,13 +20,27 @@ const COLOR_MAP = {
   'f': '#FFFFFF', // White
 };
 
+// LRU-style cache: max 200 entries, evict oldest when full
+const parseCache = new Map();
+const MAX_PARSE_CACHE = 200;
+
 /**
  * Parses Minecraft formatted text with & color codes and HEX codes, returning HTML spans.
+ * PERF-5: Results are cached by input string to avoid redundant computation.
  * @param {string} text - Raw string with & codes or &#HEX codes
  * @returns {Array<{text: string, style: object}>} Segments with inline CSS styles
  */
 export function parseMinecraftText(text) {
   if (!text) return [];
+
+  // Check LRU cache first
+  if (parseCache.has(text)) {
+    // Move to end (most recently used)
+    const cached = parseCache.get(text);
+    parseCache.delete(text);
+    parseCache.set(text, cached);
+    return cached;
+  }
 
   // Replace &#RRGGBB or <#RRGGBB> with standard format
   let cleanText = String(text)
@@ -107,5 +122,14 @@ export function parseMinecraftText(text) {
     }
   }
 
-  return segments.length > 0 ? segments : [{ text: text, style: { color: '#FFFFFF' } }];
+  const result = segments.length > 0 ? segments : [{ text: text, style: { color: '#FFFFFF' } }];
+
+  // Store in LRU cache, evict oldest if over limit
+  if (parseCache.size >= MAX_PARSE_CACHE) {
+    const oldestKey = parseCache.keys().next().value;
+    parseCache.delete(oldestKey);
+  }
+  parseCache.set(text, result);
+
+  return result;
 }

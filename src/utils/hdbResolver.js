@@ -1,4 +1,5 @@
 // HDB ID to Mojang Texture Hash Resolver & Cache
+// UX-6 Fix: Multiple CORS proxy fallbacks to prevent HDB resolution failure when one proxy goes down
 
 const HDB_PRECACHED_HASHES = {
   '61373': 'df5de940bfe499c59ee8dac9f9c3919e7535eff3a9acb16f4842bf290f4c679f',
@@ -6,6 +7,13 @@ const HDB_PRECACHED_HASHES = {
   '23223': '16439d2e306b225516aa9a6d007a7e75edd2d5015d113b42f44be62a517e574f',
   '33098': '7e3deb57eaa2f4d403ad57283ce8b41805ee5b6de912ee2b4ea736a9d1f465a7'
 };
+
+// UX-6: Multiple CORS proxy fallback chain — try each in order until one succeeds
+const CORS_PROXIES = [
+  (url) => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
+  (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  (url) => `https://proxy.cors.sh/${url}`,
+];
 
 const memoryCache = new Map(Object.entries(HDB_PRECACHED_HASHES));
 
@@ -29,6 +37,7 @@ export function getHdbTextureHashSync(hdbId) {
 
 /**
  * Dynamically resolves HDB ID to Mojang Texture Hash online and caches the result.
+ * UX-6: Tries multiple CORS proxies in sequence for fault tolerance.
  */
 export async function resolveHdbTextureHash(hdbId) {
   if (!hdbId) return null;
@@ -38,29 +47,37 @@ export async function resolveHdbTextureHash(hdbId) {
     return memoryCache.get(cleanId);
   }
 
-  try {
-    // Fetch page via CORS proxy or direct endpoint
-    const url = `https://corsproxy.io/?url=${encodeURIComponent(`https://minecraft-heads.com/custom-heads/head/${cleanId}`)}`;
-    const res = await fetch(url);
-    const html = await res.text();
-    const match = html.match(/textures\.minecraft\.net\/texture\/([a-f0-9]+)/i);
+  const targetUrl = `https://minecraft-heads.com/custom-heads/head/${cleanId}`;
 
-    if (match && match[1]) {
-      const textureHash = match[1];
-      memoryCache.set(cleanId, textureHash);
+  // UX-6: Try each CORS proxy in order until one succeeds
+  for (const proxyFn of CORS_PROXIES) {
+    try {
+      const proxyUrl = proxyFn(targetUrl);
+      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
+      if (!res.ok) continue;
+      const html = await res.text();
+      const match = html.match(/textures\.minecraft\.net\/texture\/([a-f0-9]+)/i);
 
-      // Save to localStorage
-      try {
-        const obj = {};
-        memoryCache.forEach((val, key) => { obj[key] = val; });
-        localStorage.setItem('dme_hdb_hashes', JSON.stringify(obj));
-      } catch (e) {}
+      if (match && match[1]) {
+        const textureHash = match[1];
+        memoryCache.set(cleanId, textureHash);
 
-      return textureHash;
+        // Save to localStorage
+        try {
+          const obj = {};
+          memoryCache.forEach((val, key) => { obj[key] = val; });
+          localStorage.setItem('dme_hdb_hashes', JSON.stringify(obj));
+        } catch (e) {}
+
+        return textureHash;
+      }
+    } catch (e) {
+      // This proxy failed — try next one
+      console.warn(`HDB proxy failed for ID ${cleanId}:`, e.message || e);
     }
-  } catch (e) {
-    console.warn(`HDB resolution failed for ID ${cleanId}:`, e);
   }
 
+  // All proxies failed
+  console.warn(`HDB resolution exhausted all proxies for ID: ${cleanId}`);
   return null;
 }

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { getCachedTextureUrl, setCachedTextureUrl, markNegativeCache, isNegativeCached } from '../utils/textureCache';
 import { getTextureCandidates } from '../utils/itemDatabase';
-import { getCachedTextureUrl, setCachedTextureUrl } from '../utils/textureCache';
 import { resolveHdbTextureHash } from '../utils/hdbResolver';
 import { Box } from 'lucide-react';
 
@@ -18,9 +18,20 @@ export default function ItemIcon({ material, className = 'w-8 h-8' }) {
     setSrcIndex(0);
     setHasFailedAll(false);
 
+    // PERF-4: Check negative cache first — skip all HTTP requests for known-bad materials
+    if (isNegativeCached(matUpper)) {
+      setLoadedUrl(null);
+      setHasFailedAll(true);
+      return;
+    }
+
     const cached = getCachedTextureUrl(matUpper);
-    if (cached) {
+    if (cached && cached !== '__NEGATIVE__') {
       setLoadedUrl(cached);
+      return;
+    } else if (cached === '__NEGATIVE__') {
+      setLoadedUrl(null);
+      setHasFailedAll(true);
       return;
     } else {
       setLoadedUrl(null);
@@ -52,7 +63,7 @@ export default function ItemIcon({ material, className = 'w-8 h-8' }) {
 
   const candidates = getTextureCandidates(material);
 
-  // Fallback to default Minecraft 3D Emerald Block Shield Icon
+  // Fallback default icon
   if (!matUpper || matUpper === 'AIR' || hasFailedAll) {
     return (
       <div className={`relative flex items-center justify-center bg-slate-900/60 rounded-md border border-cyan-500/30 p-1 shadow-inner ${className}`}>
@@ -62,13 +73,15 @@ export default function ItemIcon({ material, className = 'w-8 h-8' }) {
     );
   }
 
-  // Use cached or currently resolved URL first, otherwise try candidate list
   const currentSrcUrl = loadedUrl || candidates[srcIndex] || candidates[0];
 
   const handleError = () => {
-    if (srcIndex + 1 < candidates.length) {
-      setSrcIndex((prev) => prev + 1);
+    const nextIndex = srcIndex + 1;
+    if (nextIndex < candidates.length) {
+      setSrcIndex(nextIndex);
     } else {
+      // PERF-4: All candidates failed — mark as negative so we never retry
+      markNegativeCache(matUpper);
       setHasFailedAll(true);
     }
   };

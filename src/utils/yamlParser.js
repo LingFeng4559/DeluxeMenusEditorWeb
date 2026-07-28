@@ -38,26 +38,32 @@ function sanitizeYamlText(text) {
 
 /**
  * Parses slot ranges like "0-10" or [ "0-5", "8-10" ] into numeric arrays [0,1,2,3,4,5,8,9,10]
+ * BUG-3 Fix: Added MAX_SLOT upper bound to prevent memory bomb from malicious YAML like "0-99999"
  */
 function normalizeSlots(rawSlots) {
   if (rawSlots === undefined || rawSlots === null) return undefined;
 
+  const MAX_SLOT = 53; // DeluxeMenus max chest size = 54 slots (0-53)
   const resultSlots = [];
 
   const processEntry = (entry) => {
     if (typeof entry === 'number') {
-      resultSlots.push(entry);
+      if (entry >= 0 && entry <= MAX_SLOT) resultSlots.push(entry);
     } else if (typeof entry === 'string') {
       const rangeMatch = entry.trim().match(/^(\d+)\s*-\s*(\d+)$/);
       if (rangeMatch) {
         const start = parseInt(rangeMatch[1], 10);
         const end = parseInt(rangeMatch[2], 10);
-        for (let i = Math.min(start, end); i <= Math.max(start, end); i++) {
+        // BUG-3: 強制限制最大 slot 為 MAX_SLOT，防止記憶體炸彈
+        const safeEnd = Math.min(Math.max(start, end), MAX_SLOT);
+        for (let i = Math.min(start, end); i <= safeEnd; i++) {
           resultSlots.push(i);
         }
       } else {
         const parsedNum = parseInt(entry.trim(), 10);
-        if (!isNaN(parsedNum)) resultSlots.push(parsedNum);
+        if (!isNaN(parsedNum) && parsedNum >= 0 && parsedNum <= MAX_SLOT) {
+          resultSlots.push(parsedNum);
+        }
       }
     }
   };
