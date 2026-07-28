@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import {
-  Puzzle, Plus, Trash2, ShieldCheck, Key, DollarSign, Package, Scale, MessageSquare, Volume2, LogOut, CheckCircle2, XCircle, Play, AlertCircle, Layers
+  Puzzle, Plus, Trash2, Key, DollarSign, Scale, Play, AlertCircle, Layers, GripVertical, CheckCircle2, XCircle, ArrowDown, ChevronRight
 } from 'lucide-react';
 
 export default function RequirementPuzzleBuilder({ value, onChange }) {
-  const [activeTab, setActiveTab] = useState('puzzle'); // 'puzzle' | 'test' | 'json'
+  const [activeTab, setActiveTab] = useState('puzzle'); // 'puzzle' | 'test'
+  const [draggedType, setDraggedType] = useState(null);
 
   // Safety fallback for current view_requirement structure
   const viewReq = value || {};
@@ -18,15 +19,14 @@ export default function RequirementPuzzleBuilder({ value, onChange }) {
   const [simGroup, setSimGroup] = useState('default');
   const [simResult, setSimResult] = useState(null);
 
-  // Helper to trigger parent onChange
   const updateReq = (nextVal) => {
     onChange(nextVal);
   };
 
-  // Add a new Puzzle Block
+  // Add block by type
   const handleAddBlock = (type) => {
     const nextReqs = { ...requirements };
-    const idSeed = Date.now().toString().slice(-4);
+    const idSeed = Math.floor(Math.random() * 1000);
 
     if (type === 'has_permission') {
       nextReqs[`perm_${idSeed}`] = {
@@ -50,12 +50,6 @@ export default function RequirementPuzzleBuilder({ value, onChange }) {
         input: '%vault_group%',
         output: 'vip'
       };
-    } else if (type === 'has_item') {
-      nextReqs[`item_${idSeed}`] = {
-        type: 'has item',
-        material: 'DIAMOND',
-        amount: 1
-      };
     }
 
     updateReq({
@@ -64,7 +58,6 @@ export default function RequirementPuzzleBuilder({ value, onChange }) {
     });
   };
 
-  // Update a specific Block field
   const handleUpdateBlockField = (reqKey, field, val) => {
     const nextReqs = { ...requirements };
     nextReqs[reqKey] = {
@@ -77,7 +70,6 @@ export default function RequirementPuzzleBuilder({ value, onChange }) {
     });
   };
 
-  // Delete a Block
   const handleDeleteBlock = (reqKey) => {
     const nextReqs = { ...requirements };
     delete nextReqs[reqKey];
@@ -87,7 +79,6 @@ export default function RequirementPuzzleBuilder({ value, onChange }) {
     });
   };
 
-  // Add Deny Command
   const handleAddDenyCommand = (cmdText) => {
     const nextDeny = [...denyCommands, cmdText];
     updateReq({
@@ -96,7 +87,6 @@ export default function RequirementPuzzleBuilder({ value, onChange }) {
     });
   };
 
-  // Update Deny Command line
   const handleUpdateDenyCommand = (idx, val) => {
     const nextDeny = [...denyCommands];
     nextDeny[idx] = val;
@@ -106,7 +96,6 @@ export default function RequirementPuzzleBuilder({ value, onChange }) {
     });
   };
 
-  // Delete Deny Command line
   const handleDeleteDenyCommand = (idx) => {
     const nextDeny = [...denyCommands];
     nextDeny.splice(idx, 1);
@@ -125,7 +114,7 @@ export default function RequirementPuzzleBuilder({ value, onChange }) {
     if (reqEntries.length === 0) {
       setSimResult({
         passed: true,
-        message: '未設定任何條件限制，此物品將無條件顯示。',
+        message: '無任何條件限制，此物品將無條件顯示。',
         logs: ['✅ 無限制條件 (Pass)']
       });
       return;
@@ -141,42 +130,42 @@ export default function RequirementPuzzleBuilder({ value, onChange }) {
           logs.push(`✅ [${key}] 權限判斷 ${targetPerm}: 通過`);
         } else {
           allPassed = false;
-          logs.push(`❌ [${key}] 權限判斷 ${targetPerm}: 失敗 (玩家未持有此權限)`);
+          logs.push(`❌ [${key}] 權限判斷 ${targetPerm}: 失敗 (未持權限)`);
         }
       } else if (type === 'has money') {
         const needMoney = Number(rule.amount || 0);
         if (simMoney >= needMoney) {
-          logs.push(`✅ [${key}] 金錢判斷 $${needMoney}: 通過 (玩家擁有 $${simMoney})`);
+          logs.push(`✅ [${key}] 金錢判斷 $${needMoney}: 通過 ($${simMoney})`);
         } else {
           allPassed = false;
-          logs.push(`❌ [${key}] 金錢判斷 $${needMoney}: 失敗 (玩家餘額 $${simMoney} 不足)`);
+          logs.push(`❌ [${key}] 金錢判斷 $${needMoney}: 失敗 ($${simMoney} 不足)`);
         }
       } else if (rule.input === '%player_level%' || type === '>=' || type === '>') {
         const needLvl = Number(rule.output || 0);
         if (simLevel >= needLvl) {
-          logs.push(`✅ [${key}] 等級判斷 >= ${needLvl}: 通過 (玩家等級 ${simLevel})`);
+          logs.push(`✅ [${key}] 等級判斷 >= ${needLvl}: 通過 (Lv.${simLevel})`);
         } else {
           allPassed = false;
-          logs.push(`❌ [${key}] 等級判斷 >= ${needLvl}: 失敗 (玩家等級 ${simLevel} 不足)`);
+          logs.push(`❌ [${key}] 等級判斷 >= ${needLvl}: 失敗 (Lv.${simLevel} 不足)`);
         }
       } else if (rule.input === '%vault_group%' || type === 'string equals') {
         const targetGroup = rule.output || '';
         if (simGroup.toLowerCase() === targetGroup.toLowerCase()) {
-          logs.push(`✅ [${key}] 權限組判斷 ${targetGroup}: 通過`);
+          logs.push(`✅ [${key}] 權限組 ${targetGroup}: 通過`);
         } else {
           allPassed = false;
-          logs.push(`❌ [${key}] 權限組判斷 ${targetGroup}: 失敗 (玩家為 ${simGroup})`);
+          logs.push(`❌ [${key}] 權限組 ${targetGroup}: 失敗 (當前 ${simGroup})`);
         }
       } else {
-        logs.push(`⚠️ [${key}] 自訂條件 (${type}): 模擬環境自動預設通過`);
+        logs.push(`⚠️ [${key}] 自訂條件 (${type}): 預設通過`);
       }
     }
 
     setSimResult({
       passed: allPassed,
       message: allPassed
-        ? '🎉 測試通過！該物品將會在 GUI 中正常顯示。'
-        : `⛔ 測試未通過！物品將隱藏，並執行 ${denyCommands.length} 條拒絕指令 (deny_commands)。`,
+        ? '🎉 檢測通過！物品可在選單中顯示。'
+        : `⛔ 檢測未通過！物品將隱藏，並觸發 ${denyCommands.length} 條拒絕指令。`,
       logs
     });
   };
@@ -194,7 +183,7 @@ export default function RequirementPuzzleBuilder({ value, onChange }) {
           }`}
         >
           <Puzzle className="w-3.5 h-3.5" />
-          <span>拼圖式積木編輯</span>
+          <span>Scratch 拼接積木</span>
         </button>
 
         <button
@@ -211,130 +200,176 @@ export default function RequirementPuzzleBuilder({ value, onChange }) {
         </button>
       </div>
 
-      {/* TAB 1: PUZZLE BLOCK BUILDER */}
+      {/* TAB 1: SCRATCH-STYLE PUZZLE BLOCK CANVAS */}
       {activeTab === 'puzzle' && (
         <div className="space-y-3">
-          {/* Quick Block Add Palette */}
-          <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800 space-y-2">
+          {/* Scratch Palette ToolBox */}
+          <div className="p-3 bg-slate-950/90 rounded-xl border border-slate-800 space-y-2">
             <span className="text-[11px] text-amber-400 font-bold flex items-center gap-1">
-              <Plus className="w-3.5 h-3.5" /> 點擊拼圖塊插入條件畫布:
+              <GripVertical className="w-3.5 h-3.5" /> 拖曳/點擊積木拼接到下方 Canvas 凸凹槽:
             </span>
-            <div className="flex flex-wrap gap-1.5">
-              <button
+            <div className="grid grid-cols-2 gap-1.5">
+              <div
+                draggable
+                onDragStart={() => setDraggedType('has_permission')}
                 onClick={() => handleAddBlock('has_permission')}
-                className="px-2.5 py-1 text-[11px] font-bold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 rounded-lg transition flex items-center gap-1"
+                className="cursor-grab active:cursor-grabbing p-2 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-[11px] rounded-lg transition flex items-center gap-1.5 shadow border-b-2 border-emerald-800"
               >
-                <Key className="w-3 h-3" /> + 權限拼圖
-              </button>
-              <button
+                <div className="w-2 h-3 bg-emerald-800 rounded-sm" />
+                <Key className="w-3.5 h-3.5" />
+                <span>【權限積木】</span>
+              </div>
+
+              <div
+                draggable
+                onDragStart={() => setDraggedType('has_money')}
                 onClick={() => handleAddBlock('has_money')}
-                className="px-2.5 py-1 text-[11px] font-bold bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 rounded-lg transition flex items-center gap-1"
+                className="cursor-grab active:cursor-grabbing p-2 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold text-[11px] rounded-lg transition flex items-center gap-1.5 shadow border-b-2 border-cyan-800"
               >
-                <DollarSign className="w-3 h-3" /> + 金錢拼圖
-              </button>
-              <button
+                <div className="w-2 h-3 bg-cyan-800 rounded-sm" />
+                <DollarSign className="w-3.5 h-3.5" />
+                <span>【金錢積木】</span>
+              </div>
+
+              <div
+                draggable
+                onDragStart={() => setDraggedType('level_check')}
                 onClick={() => handleAddBlock('level_check')}
-                className="px-2.5 py-1 text-[11px] font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-lg transition flex items-center gap-1"
+                className="cursor-grab active:cursor-grabbing p-2 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-[11px] rounded-lg transition flex items-center gap-1.5 shadow border-b-2 border-amber-800"
               >
-                <Scale className="w-3 h-3" /> + 等級比較塊
-              </button>
-              <button
+                <div className="w-2 h-3 bg-amber-800 rounded-sm" />
+                <Scale className="w-3.5 h-3.5" />
+                <span>【等級比較積木】</span>
+              </div>
+
+              <div
+                draggable
+                onDragStart={() => setDraggedType('string_equals')}
                 onClick={() => handleAddBlock('string_equals')}
-                className="px-2.5 py-1 text-[11px] font-bold bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/40 rounded-lg transition flex items-center gap-1"
+                className="cursor-grab active:cursor-grabbing p-2 bg-purple-600 hover:bg-purple-500 text-slate-950 font-bold text-[11px] rounded-lg transition flex items-center gap-1.5 shadow border-b-2 border-purple-800"
               >
-                <Layers className="w-3 h-3" /> + 權限組比對
-              </button>
+                <div className="w-2 h-3 bg-purple-800 rounded-sm" />
+                <Layers className="w-3.5 h-3.5" />
+                <span>【權限組積木】</span>
+              </div>
             </div>
           </div>
 
-          {/* Puzzle Canvas: Connected Block List */}
-          <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
-            {reqList.length > 0 ? (
-              reqList.map(([reqKey, rule], idx) => (
-                <div
-                  key={reqKey}
-                  className="relative p-3 bg-slate-900 border-l-4 border-amber-500 rounded-r-xl border-y border-r border-slate-800 shadow-md space-y-2 transition hover:border-amber-400 group"
-                >
-                  {/* Puzzle Notch Header */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-mono bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded font-bold">
-                        🧩 拼圖塊 #{idx + 1}
-                      </span>
-                      <span className="text-xs font-mono font-bold text-slate-200">{reqKey}</span>
-                    </div>
-                    <button
-                      onClick={() => handleDeleteBlock(reqKey)}
-                      className="p-1 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded transition"
-                      title="刪除拼圖塊"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+          {/* SCRATCH CANVAS (INTERLOCKING PUZZLE STACK) */}
+          <div
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={() => {
+              if (draggedType) {
+                handleAddBlock(draggedType);
+                setDraggedType(null);
+              }
+            }}
+            className="p-3 bg-slate-950/70 border-2 border-dashed border-slate-800 rounded-xl min-h-[200px] max-h-[340px] overflow-y-auto space-y-0"
+          >
+            {/* Top Scratch Stack Header Notch */}
+            <div className="flex items-center justify-between bg-amber-500 text-slate-950 font-bold text-xs px-3 py-1.5 rounded-t-xl shadow relative">
+              <div className="flex items-center gap-1.5">
+                <Puzzle className="w-4 h-4" />
+                <span>當條件滿足時 (requirements) 顯示此物品:</span>
+              </div>
+              {/* Bottom interlocking Tab / Notch */}
+              <div className="absolute -bottom-2 left-6 w-5 h-2 bg-amber-500 rounded-b-md shadow-sm z-10" />
+            </div>
 
-                  {/* Block Content Inputs */}
-                  {rule.type === 'has permission' || rule.permission !== undefined ? (
-                    <div className="flex items-center gap-2 pt-1">
-                      <span className="text-xs text-emerald-400 font-bold flex items-center gap-1 min-w-[70px]">
-                        <Key className="w-3.5 h-3.5" /> 擁有權限:
-                      </span>
-                      <input
-                        type="text"
-                        value={rule.permission || ''}
-                        onChange={(e) => handleUpdateBlockField(reqKey, 'permission', e.target.value)}
-                        placeholder="deluxemenus.vip.use"
-                        className="flex-1 px-2.5 py-1 text-xs font-mono bg-slate-950 border border-slate-800 rounded-lg text-emerald-300 focus:outline-none focus:border-emerald-500"
-                      />
-                    </div>
-                  ) : rule.type === 'has money' || rule.amount !== undefined ? (
-                    <div className="flex items-center gap-2 pt-1">
-                      <span className="text-xs text-cyan-400 font-bold flex items-center gap-1 min-w-[70px]">
-                        <DollarSign className="w-3.5 h-3.5" /> 金錢大於:
-                      </span>
-                      <input
-                        type="number"
-                        value={rule.amount || 0}
-                        onChange={(e) => handleUpdateBlockField(reqKey, 'amount', Number(e.target.value))}
-                        placeholder="100"
-                        className="w-32 px-2.5 py-1 text-xs font-mono bg-slate-950 border border-slate-800 rounded-lg text-cyan-300 focus:outline-none focus:border-cyan-500"
-                      />
-                    </div>
-                  ) : (
-                    <div className="space-y-1.5 pt-1">
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={rule.input || ''}
-                          onChange={(e) => handleUpdateBlockField(reqKey, 'input', e.target.value)}
-                          placeholder="PAPI (如 %player_level%)"
-                          className="flex-1 px-2 py-1 text-xs font-mono bg-slate-950 border border-slate-800 rounded-lg text-slate-200"
-                        />
-                        <select
-                          value={rule.type || '=='}
-                          onChange={(e) => handleUpdateBlockField(reqKey, 'type', e.target.value)}
-                          className="px-2 py-1 text-xs font-mono bg-slate-800 border border-slate-700 rounded-lg text-amber-300 font-bold"
+            {reqList.length > 0 ? (
+              reqList.map(([reqKey, rule], idx) => {
+                const isPermission = rule.type === 'has permission' || rule.permission !== undefined;
+                const isMoney = rule.type === 'has money' || rule.amount !== undefined;
+                const blockBg = isPermission ? 'bg-emerald-600 text-slate-950 border-emerald-700'
+                              : isMoney ? 'bg-cyan-600 text-slate-950 border-cyan-700'
+                              : 'bg-amber-600 text-slate-950 border-amber-700';
+
+                return (
+                  <div key={reqKey} className="relative group pt-1">
+                    {/* Interlocking Puzzle Block Body */}
+                    <div className={`p-2.5 ${blockBg} border-b-2 font-bold text-xs shadow-lg relative flex flex-col gap-1.5 rounded-b-md`}>
+                      {/* Top Inward Notch Hole */}
+                      <div className="absolute -top-1.5 left-6 w-5 h-2 bg-slate-950 rounded-b-sm border-t border-slate-800" />
+
+                      {/* Header bar of the Puzzle Block */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <GripVertical className="w-3.5 h-3.5 opacity-70 cursor-grab" />
+                          <span className="font-mono text-[11px] opacity-80">#{idx + 1} {reqKey}</span>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteBlock(reqKey)}
+                          className="p-1 hover:bg-black/20 rounded transition text-slate-950 hover:text-rose-950"
                         >
-                          <option value="==">==</option>
-                          <option value=">=">&gt;=</option>
-                          <option value="<=">&lt;=</option>
-                          <option value="!=">!=</option>
-                          <option value="string equals">string equals</option>
-                        </select>
-                        <input
-                          type="text"
-                          value={rule.output || ''}
-                          onChange={(e) => handleUpdateBlockField(reqKey, 'output', e.target.value)}
-                          placeholder="目標值"
-                          className="flex-1 px-2 py-1 text-xs font-mono bg-slate-950 border border-slate-800 rounded-lg text-amber-400"
-                        />
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
+
+                      {/* Editable Fields inside Scratch Block */}
+                      {isPermission ? (
+                        <div className="flex items-center gap-1.5 bg-black/20 p-1.5 rounded-lg">
+                          <Key className="w-3.5 h-3.5" />
+                          <span className="text-[11px]">擁有權限:</span>
+                          <input
+                            type="text"
+                            value={rule.permission || ''}
+                            onChange={(e) => handleUpdateBlockField(reqKey, 'permission', e.target.value)}
+                            placeholder="deluxemenus.vip.use"
+                            className="flex-1 px-2 py-0.5 text-xs font-mono bg-slate-950 text-emerald-300 rounded focus:outline-none"
+                          />
+                        </div>
+                      ) : isMoney ? (
+                        <div className="flex items-center gap-1.5 bg-black/20 p-1.5 rounded-lg">
+                          <DollarSign className="w-3.5 h-3.5" />
+                          <span className="text-[11px]">金錢大於:</span>
+                          <input
+                            type="number"
+                            value={rule.amount || 0}
+                            onChange={(e) => handleUpdateBlockField(reqKey, 'amount', Number(e.target.value))}
+                            placeholder="100"
+                            className="w-28 px-2 py-0.5 text-xs font-mono bg-slate-950 text-cyan-300 rounded focus:outline-none"
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 bg-black/20 p-1.5 rounded-lg">
+                          <input
+                            type="text"
+                            value={rule.input || ''}
+                            onChange={(e) => handleUpdateBlockField(reqKey, 'input', e.target.value)}
+                            placeholder="%player_level%"
+                            className="flex-1 px-1.5 py-0.5 text-xs font-mono bg-slate-950 text-slate-200 rounded"
+                          />
+                          <select
+                            value={rule.type || '=='}
+                            onChange={(e) => handleUpdateBlockField(reqKey, 'type', e.target.value)}
+                            className="px-1 py-0.5 text-xs font-mono bg-slate-900 text-amber-300 rounded font-bold"
+                          >
+                            <option value="==">==</option>
+                            <option value=">=">&gt;=</option>
+                            <option value="<=">&lt;=</option>
+                            <option value="!=">!=</option>
+                            <option value="string equals">string equals</option>
+                          </select>
+                          <input
+                            type="text"
+                            value={rule.output || ''}
+                            onChange={(e) => handleUpdateBlockField(reqKey, 'output', e.target.value)}
+                            placeholder="10"
+                            className="flex-1 px-1.5 py-0.5 text-xs font-mono bg-slate-950 text-amber-300 rounded"
+                          />
+                        </div>
+                      )}
+
+                      {/* Bottom Outward Interlocking Tab / Notch */}
+                      <div className="absolute -bottom-2 left-6 w-5 h-2 bg-inherit rounded-b-md shadow-md z-10" />
                     </div>
-                  )}
-                </div>
-              ))
+                  </div>
+                );
+              })
             ) : (
-              <div className="text-center py-6 border-2 border-dashed border-slate-800 rounded-xl text-slate-500 text-xs">
-                點擊上方拼圖按鈕，為此物品拼接顯示條件 🧩
+              <div className="py-8 text-center text-slate-500 text-xs flex flex-col items-center justify-center gap-2">
+                <ArrowDown className="w-5 h-5 animate-bounce text-slate-600" />
+                <span>拖拽或點擊上方積木，向 Scratch 堆疊鏈中拼接條件</span>
               </div>
             )}
           </div>
@@ -343,7 +378,7 @@ export default function RequirementPuzzleBuilder({ value, onChange }) {
           <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800 space-y-2 pt-3 border-t border-slate-800">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-rose-400 flex items-center gap-1.5">
-                <AlertCircle className="w-3.5 h-3.5" /> 拒絕懲罰指令 (deny_commands)
+                <AlertCircle className="w-3.5 h-3.5" /> 拒絕觸發指令 (deny_commands)
               </span>
               <div className="flex gap-1">
                 <button
@@ -398,7 +433,6 @@ export default function RequirementPuzzleBuilder({ value, onChange }) {
             </button>
           </div>
 
-          {/* Player Mock Data Inputs */}
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div>
               <label className="text-[11px] text-slate-400 block mb-0.5">測試權限:</label>
@@ -438,7 +472,6 @@ export default function RequirementPuzzleBuilder({ value, onChange }) {
             </div>
           </div>
 
-          {/* Test Results Output */}
           {simResult && (
             <div className={`p-3 rounded-xl border space-y-2 text-xs ${
               simResult.passed
