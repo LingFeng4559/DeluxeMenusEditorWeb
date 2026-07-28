@@ -7,6 +7,7 @@ import {
   ChevronRight, Sparkles, Check, Hash, Layers, ShieldAlert, GitCompare, Key, Lock, DollarSign, Award, Users, Zap
 } from 'lucide-react';
 import MaterialSearchModal from './MaterialSearchModal';
+import RequirementPuzzleBuilder from './RequirementPuzzleBuilder';
 
 export default function ItemEditor({
   item,
@@ -595,111 +596,31 @@ export default function ItemEditor({
           </div>
         )}
 
-        {/* TAB 4: VIEW REQUIREMENTS WITH ONE-CLICK PRESET TEMPLATES */}
+        {/* TAB 4: VIEW REQUIREMENTS WITH PUZZLE BLOCK BUILDER */}
         {activeTab === 'requirements' && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <label className="text-xs text-amber-300 font-bold flex items-center gap-1.5">
-                <ShieldAlert className="w-4 h-4" /> {t('item_editor.view_requirement')}
+                <ShieldAlert className="w-4 h-4" /> 拼圖式顯示條件建立器 (view_requirement)
               </label>
             </div>
 
-            {/* ⚡ ONE-CLICK QUICK PRESET TEMPLATES */}
-            <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800 space-y-2.5">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400">
-                <Zap className="w-3.5 h-3.5 fill-amber-400" />
-                <span>一鍵快速生成常見顯示條件範本:</span>
-              </div>
+            {/* Puzzle Requirement Builder Component */}
+            <RequirementPuzzleBuilder
+              value={item?.view_requirement}
+              onChange={(nextReqVal) => handleChange('view_requirement', nextReqVal)}
+            />
 
-              {/* Preset 1: Permission Check */}
-              <div className="space-y-1.5 pt-1">
-                <label className="text-[11px] text-slate-400 font-medium flex items-center gap-1">
-                  <Lock className="w-3 h-3 text-emerald-400" /> 1. 玩家權限判斷 (has permission)
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={quickPermissionInput}
-                    onChange={(e) => setQuickPermissionInput(e.target.value)}
-                    placeholder="e.g. deluxemenus.vip.use"
-                    className="flex-1 px-2.5 py-1.5 text-xs font-mono bg-slate-900 border border-slate-800 rounded-lg text-emerald-400 focus:outline-none"
-                  />
-                  <button
-                    onClick={() => handleApplyPermissionTemplate(quickPermissionInput)}
-                    className="px-3 py-1.5 text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-lg transition shadow flex items-center gap-1"
-                  >
-                    <Check className="w-3.5 h-3.5" /> 套用權限
-                  </button>
-                </div>
-              </div>
-
-              {/* Preset 2: Vault Money Check */}
-              <div className="space-y-1.5 pt-1 border-t border-slate-900">
-                <label className="text-[11px] text-slate-400 font-medium flex items-center gap-1">
-                  <DollarSign className="w-3 h-3 text-cyan-400" /> 2. 玩家金錢餘額判斷 (has money)
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    value={quickMoneyInput}
-                    onChange={(e) => setQuickMoneyInput(e.target.value)}
-                    placeholder="100"
-                    className="w-24 px-2.5 py-1.5 text-xs font-mono bg-slate-900 border border-slate-800 rounded-lg text-cyan-400 focus:outline-none"
-                  />
-                  <button
-                    onClick={() => handleApplyMoneyTemplate(quickMoneyInput)}
-                    className="flex-1 px-3 py-1.5 text-xs font-bold bg-cyan-500 hover:bg-cyan-400 text-slate-950 rounded-lg transition shadow flex items-center justify-center gap-1"
-                  >
-                    <Check className="w-3.5 h-3.5" /> 套用金錢判斷
-                  </button>
-                </div>
-              </div>
-
-              {/* Preset 3: LuckPerms Group Check */}
-              <div className="pt-1 border-t border-slate-900 flex gap-2">
-                <button
-                  onClick={() => handleApplyGroupTemplate('admin')}
-                  className="flex-1 py-1.5 px-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/40 rounded-lg text-[11px] font-bold transition flex items-center justify-center gap-1"
-                >
-                  <Users className="w-3 h-3" /> 僅限 Admin 權限組
-                </button>
-                <button
-                  onClick={() => handleApplyGroupTemplate('vip')}
-                  className="flex-1 py-1.5 px-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-lg text-[11px] font-bold transition flex items-center justify-center gap-1"
-                >
-                  <Award className="w-3 h-3" /> 僅限 VIP 權限組
-                </button>
-              </div>
-            </div>
-
-            {/* Current View Requirement JSON Editor */}
-            {item?.view_requirement ? (
-              <div className="space-y-3">
-                <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800 font-mono text-xs text-slate-300 space-y-2">
-                  <span className="text-[11px] text-slate-500 uppercase tracking-wider block">當前 view_requirement YAML/JSON 結構:</span>
-                  <textarea
-                    rows={6}
-                    value={JSON.stringify(item.view_requirement, null, 2)}
-                    onChange={(e) => {
-                      try {
-                        const parsed = JSON.parse(e.target.value);
-                        handleChange('view_requirement', parsed);
-                      } catch (err) {}
-                    }}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 font-mono text-xs text-cyan-300 focus:outline-none"
-                  ></textarea>
-                </div>
-
+            {/* Clear Requirement Button */}
+            {item?.view_requirement && (
+              <div className="pt-2 border-t border-slate-800 flex justify-end">
                 <button
                   onClick={() => handleChange('view_requirement', undefined)}
-                  className="px-3 py-1.5 text-xs text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-lg hover:bg-rose-500/20 transition"
+                  className="px-3 py-1.5 text-xs text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-lg hover:bg-rose-500/20 transition flex items-center gap-1 font-bold"
                 >
-                  {t('item_editor.remove_requirement')}
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>清除全部顯示條件</span>
                 </button>
-              </div>
-            ) : (
-              <div className="text-center py-4 border-2 border-dashed border-slate-800 rounded-xl space-y-2">
-                <p className="text-xs text-slate-500">{t('item_editor.no_requirement')}</p>
               </div>
             )}
           </div>
