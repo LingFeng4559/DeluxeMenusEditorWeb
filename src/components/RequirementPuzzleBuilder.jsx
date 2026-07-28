@@ -342,13 +342,15 @@ export default function RequirementPuzzleBuilder({ value, onChange }) {
                           <select
                             value={rule.type || '=='}
                             onChange={(e) => handleUpdateBlockField(reqKey, 'type', e.target.value)}
-                            className="px-1 py-0.5 text-xs font-mono bg-slate-900 text-amber-300 rounded font-bold"
+                            className="px-1.5 py-0.5 text-xs bg-slate-900 text-amber-300 rounded font-bold border border-amber-500/30"
                           >
-                            <option value="==">==</option>
-                            <option value=">=">&gt;=</option>
-                            <option value="<=">&lt;=</option>
-                            <option value="!=">!=</option>
-                            <option value="string equals">string equals</option>
+                            <option value="==">== (數值/文字完全相同)</option>
+                            <option value=">=">&gt;= (大於等於)</option>
+                            <option value="<=">&lt;= (小於等於)</option>
+                            <option value="!=">!= (不等於)</option>
+                            <option value="string equals">🔤 文字相同 (string equals)</option>
+                            <option value="string contains">🔍 文字包含 (string contains)</option>
+                            <option value="regex matches">⚙️ 正則符合 (regex matches)</option>
                           </select>
                           <input
                             type="text"
