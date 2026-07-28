@@ -346,6 +346,30 @@ function AppContent() {
     }));
   };
 
+  const handleCreateSlotItem = (slotIdx = selectedSlot, initialMaterial = 'STONE') => {
+    const newKey = `item_slot_${slotIdx}`;
+    const newItem = {
+      material: initialMaterial,
+      slot: slotIdx,
+      display_name: `&f新物品 (槽位 ${slotIdx})`,
+      lore: [
+        '&7由 DeluxeGUI 視覺化編輯器建立',
+        '&e點擊右側屬性面板進行詳細修改'
+      ]
+    };
+
+    updateMenuState({
+      ...menu,
+      items: {
+        ...(menu.items || {}),
+        [newKey]: newItem
+      }
+    });
+
+    setSelectedSlot(slotIdx);
+    setSelectedSlots([slotIdx]);
+  };
+
   const handleAddPriorityVariant = () => {
     const nextPriority = (slotVariants.length > 0 ? (slotVariants[slotVariants.length - 1].priority || 1) + 1 : 1);
     const newKey = `item_slot_${selectedSlot}_p${nextPriority}`;
@@ -552,6 +576,7 @@ function AppContent() {
             selectedSlots={selectedSlots}
             slotVariants={slotVariants}
             activeVariantIndex={activeVariantIndex}
+            onCreateItem={handleCreateSlotItem}
             onSelectVariant={(idx) => handleSelectPriorityItem(selectedSlot, idx)}
             onAddPriorityVariant={handleAddPriorityVariant}
             onUpdateItem={(updatedItem, newKeyName) => handleUpdateVariantItem(currentItemKey, updatedItem, newKeyName)}

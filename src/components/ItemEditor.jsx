@@ -15,6 +15,7 @@ export default function ItemEditor({
   selectedSlots,
   slotVariants = [],
   activeVariantIndex = 0,
+  onCreateItem,
   onSelectVariant,
   onAddPriorityVariant,
   onUpdateItem,
@@ -48,17 +49,45 @@ export default function ItemEditor({
     }
   }, [item, selectedSlot]);
 
-  if (!item && selectedSlots.length === 0) {
+  if (!item) {
     return (
-      <div className="w-96 bg-slate-900/60 rounded-2xl border border-slate-800/80 p-6 flex flex-col items-center justify-center text-center backdrop-blur-md">
-        <div className="w-14 h-14 rounded-2xl bg-slate-800 flex items-center justify-center text-slate-500 mb-4 border border-slate-700">
-          <Edit3 className="w-7 h-7" />
+      <aside className="w-96 bg-slate-900/60 rounded-2xl border border-slate-800/80 p-6 flex flex-col items-center justify-center text-center backdrop-blur-md shadow-2xl">
+        <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-4 shadow-inner">
+          <Plus className="w-8 h-8 animate-pulse" />
         </div>
-        <h3 className="text-base font-bold text-slate-300 mb-1">{t('item_editor.title')}</h3>
-        <p className="text-xs text-slate-500 max-w-[220px]">
-          {t('item_editor.no_item_selected')}
+        <h3 className="text-base font-bold text-slate-200 mb-1">槽位 #{selectedSlot} 目前為空</h3>
+        <p className="text-xs text-slate-400 mb-6 max-w-[240px]">
+          點擊下方按鈕以在此槽位建立新物品，並設定材質與屬性。
         </p>
-      </div>
+
+        <div className="w-full space-y-3">
+          <button
+            onClick={() => onCreateItem && onCreateItem(selectedSlot, 'STONE')}
+            className="w-full py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl transition text-xs flex items-center justify-center gap-2 shadow-lg hover:shadow-emerald-500/20"
+          >
+            <Plus className="w-4 h-4" />
+            <span>建立預設物品 (STONE)</span>
+          </button>
+
+          <button
+            onClick={() => setShowSearchModal(true)}
+            className="w-full py-2 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold rounded-xl transition text-xs flex items-center justify-center gap-2"
+          >
+            <Search className="w-4 h-4 text-cyan-400" />
+            <span>開啟材質庫選擇材質創建</span>
+          </button>
+        </div>
+
+        {showSearchModal && (
+          <MaterialSearchModal
+            onClose={() => setShowSearchModal(false)}
+            onSelect={(mat) => {
+              setShowSearchModal(false);
+              if (onCreateItem) onCreateItem(selectedSlot, mat);
+            }}
+          />
+        )}
+      </aside>
     );
   }
 
