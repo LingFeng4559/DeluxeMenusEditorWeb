@@ -11,6 +11,26 @@ export function normalizeMaterialName(material) {
 }
 
 /**
+ * Common synonyms, mistranslations, and regional names mapping for intelligent searching.
+ */
+const COMMON_ALIASES = {
+  'NETHER_STAR': ['地域之星', '地獄之星', '下界之星', '地獄星'],
+  'NETHERITE_INGOT': ['下界合金錠', '地獄合金錠', '地域合金錠', '下界錠'],
+  'NETHERITE_SCRAP': ['下界合金碎片', '地獄合金碎片', '地域合金碎片'],
+  'NETHERRACK': ['下界石', '地獄石', '地域石', '地獄岩'],
+  'NETHER_BRICK': ['下界磚', '地獄磚', '地域磚'],
+  'NETHER_WART': ['下界疣', '地獄疣', '地域疣'],
+  'QUARTZ': ['下界水晶', '地獄水晶', '地域水晶', '石英'],
+  'END_STONE': ['終界石', '末地石', '末影石'],
+  'ENDER_PEARL': ['終界珍珠', '末影珍珠'],
+  'ENDER_EYE': ['終界之眼', '末影之眼'],
+  'ELYTRA': ['鞘翅', '滑翔翼'],
+  'TOTEM_OF_UNDYING': ['不死圖騰', '不死之圖騰'],
+  'ENCHANTED_GOLDEN_APPLE': ['附魔金蘋果', '神聖金蘋果', '麥金蘋果'],
+  'BEACON': ['信標', '烽火台']
+};
+
+/**
  * Official Minecraft MHF Skull / Mob Head texture mapping dictionary
  */
 const MHF_HEAD_MAP = {
@@ -267,12 +287,21 @@ export function getAllMinecraftItems(currentLangCode = 'zh_TW', customItemNames 
     const zhName = zhTwDict[id] || localName;
     const enName = enUsDict[id] || id.replace(/_/g, ' ');
 
+    const aliases = (COMMON_ALIASES[id] || []).join(' ');
+    // 智慧型容錯擴充：自動將「地獄」擴充「地域/下界」，「終界」擴充「末影」
+    let autoVariants = `${zhName} ${localName}`
+      .replace(/地獄/g, '地域 下界')
+      .replace(/地域/g, '地獄 下界')
+      .replace(/下界/g, '地獄 地域')
+      .replace(/終界/g, '末影 末地')
+      .replace(/末影/g, '終界 末地');
+
     mergedMap.set(id, {
       id,
       name: enName,
       zhName: zhName,
       localName: localName,
-      searchableText: `${id} ${enName} ${zhName} ${localName} ${Object.values(officialMultilingualMap).map(m => m[id]).filter(Boolean).join(' ')}`.toLowerCase()
+      searchableText: `${id} ${enName} ${zhName} ${localName} ${aliases} ${autoVariants} ${Object.values(officialMultilingualMap).map(m => m[id]).filter(Boolean).join(' ')}`.toLowerCase()
     });
   });
 
