@@ -64,8 +64,17 @@ export default function LorePreview({ slotData, item, position }) {
       {/* Item Variant Cards Stack */}
       <div className={`space-y-2.5 ${isMulti ? 'max-h-[380px] overflow-y-auto pr-1' : ''}`}>
         {items.map((varItem, idx) => {
-          const displayName = varItem.display_name || varItem.material || 'Item';
-          const loreList = Array.isArray(varItem.lore) ? varItem.lore : (varItem.lore ? [varItem.lore] : []);
+          // Replace PAPI variables with Mock Player profile for real-time rendering
+          const applyMockPapi = (str) => {
+            if (!str) return '';
+            return String(str)
+              .replace(/%player_name%/g, 'Steve')
+              .replace(/%vault_eco_balance%/g, '$12,500')
+              .replace(/%luckperms_primary_group_name%/g, 'VIP');
+          };
+
+          const displayName = applyMockPapi(varItem.display_name || varItem.material || 'Item');
+          const loreList = (Array.isArray(varItem.lore) ? varItem.lore : (varItem.lore ? [varItem.lore] : [])).map(applyMockPapi);
           const isCurrentActive = isMulti && idx === activeIdx;
           const priorityNum = varItem.priority || (idx + 1);
 

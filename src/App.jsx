@@ -6,6 +6,9 @@ import ItemEditor from './components/ItemEditor';
 import MenuSettings from './components/MenuSettings';
 import YamlCodeEditor from './components/YamlCodeEditor';
 import TreeHierarchyExplorer from './components/TreeHierarchyExplorer';
+import CommandPalette from './components/CommandPalette';
+import MockPlayerProfile from './components/MockPlayerProfile';
+import SnippetLibrary from './components/SnippetLibrary';
 import { parseYamlToMenu, dumpMenuToYaml, DEFAULT_MENU } from './utils/yamlParser';
 import { clearTextureCache } from './utils/textureCache';
 import { Settings, UploadCloud, AlertTriangle } from 'lucide-react';
@@ -184,10 +187,27 @@ function AppContent() {
     }, 300);
   };
 
-  // Global IDE Keyboard Shortcuts (Ctrl+Z, Ctrl+Y, Ctrl+S, Delete)
+  // Mock Player Profile State
+  const [mockProfile, setMockProfile] = useState({
+    name: 'Steve',
+    balance: 12500,
+    group: 'VIP'
+  });
+
+  // Command Palette State
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+
+  // Global IDE Keyboard Shortcuts (Ctrl+Z, Ctrl+Y, Ctrl+S, Delete, Ctrl+Shift+P)
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Ignore shortcut triggers when actively typing inside form inputs / textareas
+      // Command Palette Trigger (Ctrl+Shift+P or Ctrl+P)
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        setShowCommandPalette((prev) => !prev);
+        return;
+      }
+
+      // Ignore other shortcut triggers when actively typing inside form inputs / textareas
       const tagName = e.target.tagName.toLowerCase();
       if (tagName === 'input' || tagName === 'textarea' || e.target.isContentEditable) {
         return;
@@ -627,6 +647,27 @@ function AppContent() {
           </button>
         </div>
 
+        {/* Mock Player Profile & Snippet Library Dashboard */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <MockPlayerProfile
+            mockProfile={mockProfile}
+            onUpdateProfile={setMockProfile}
+          />
+          <SnippetLibrary
+            onInsertSnippet={(snippet) => {
+              if (snippet.category === 'Commands' && selectedSlot !== null) {
+                const currentItem = getSelectedItem();
+                if (currentItem) {
+                  handleUpdateItem(currentItem.key, {
+                    ...currentItem,
+                    left_click_commands: [...(currentItem.left_click_commands || []), ...snippet.content]
+                  });
+                }
+              }
+            }}
+          />
+        </div>
+
         {/* IDE Tree Hierarchy Explorer Panel */}
         <TreeHierarchyExplorer
           menu={menu}
@@ -721,6 +762,23 @@ function AppContent() {
           onClose={() => setShowSettingsModal(false)}
         />
       )}
+
+      {/* VS Code Style Command Palette (Ctrl+Shift+P) */}
+      <CommandPalette
+        isOpen={showCommandPalette}
+        onClose={() => setShowCommandPalette(false)}
+        menu={menu}
+        slotItemsMap={slotItemsMap}
+        onExecuteCommand={(cmd, payload) => {
+          if (cmd === 'OPEN_SETTINGS') setShowSettingsModal(true);
+          else if (cmd === 'EXPORT_YAML') handleExportYaml();
+          else if (cmd === 'CREATE_ITEM') handleCreateSlotItem(selectedSlot || 0);
+          else if (cmd === 'CLEAR_SELECTION') handleClearSelection();
+          else if (cmd === 'JUMP_TO_SLOT' && payload) {
+            handleSelectSlot(payload.slot);
+          }
+        }}
+      />
     </div>
   );
 }

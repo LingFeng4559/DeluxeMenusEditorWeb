@@ -42,8 +42,17 @@ export function parseMinecraftText(text) {
     return cached;
   }
 
-  // Replace &#RRGGBB or <#RRGGBB> with standard format
+  // Pre-process MiniMessage <gradient:#color1:#color2>text</gradient> or <rainbow>text</rainbow>
   let cleanText = String(text)
+    .replace(/<gradient:([^>]+)>(.*?)<\/gradient>/gi, (match, colors, innerText) => {
+      const colorList = colors.split(':').map((c) => c.trim().startsWith('#') ? c.trim() : `#${c.trim()}`);
+      const color1 = colorList[0] || '#FF5555';
+      const color2 = colorList[1] || '#55FF55';
+      return `<span style="background: linear-gradient(to right, ${color1}, ${color2}); -webkit-background-clip: text; color: transparent; font-weight: bold;">${innerText}</span>`;
+    })
+    .replace(/<rainbow>(.*?)<\/rainbow>/gi, (match, innerText) => {
+      return `<span style="background: linear-gradient(to right, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3); -webkit-background-clip: text; color: transparent; font-weight: bold;">${innerText}</span>`;
+    })
     .replace(/&#([0-9a-fA-F]{6})/g, '§#$1')
     .replace(/<#([0-9a-fA-F]{6})>/g, '§#$1')
     .replace(/&([0-9a-fA-Fk-rK-R])/g, '§$1');
