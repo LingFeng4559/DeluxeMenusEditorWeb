@@ -6,6 +6,16 @@
     "load_sample": "載入範例",
     "custom_lang": "語系與資產同步"
   },
+  "app": {
+    "title": "DeluxeMenus GUI 視覺化編輯器",
+    "subtitle": "專業級 Minecraft DeluxeMenus 菜單視覺化設計器",
+    "templates": "載入預設範本選單",
+    "import_yaml": "匯入 YAML",
+    "export_yaml": "匯出 YAML",
+    "copy_yaml": "複製 YAML",
+    "copied": "已複製到剪貼簿",
+    "custom_lang": "語系資產"
+  },
   "gui_grid": {
     "title": "GUI 介面預覽",
     "slot": "槽位",

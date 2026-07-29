@@ -6,6 +6,16 @@
     "load_sample": "Load Sample",
     "custom_lang": "Language & Assets"
   },
+  "app": {
+    "title": "DeluxeMenus GUI Visual Editor",
+    "subtitle": "Professional Minecraft DeluxeMenus Visual Designer",
+    "templates": "Load Preset Templates",
+    "import_yaml": "Import YAML",
+    "export_yaml": "Export YAML",
+    "copy_yaml": "Copy YAML",
+    "copied": "Copied to Clipboard",
+    "custom_lang": "Assets"
+  },
   "gui_grid": {
     "title": "GUI Preview",
     "slot": "Slot",
