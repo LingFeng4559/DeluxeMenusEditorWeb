@@ -1,13 +1,13 @@
 {
   "header": {
-    "title": "DeluxeMenus GUI Visual Editor",
+    "title": "DeluxeMenusEditorWeb Visual Editor",
     "import_yaml": "Import YAML",
     "export_yaml": "Export YAML",
     "load_sample": "Load Sample",
     "custom_lang": "Language & Assets"
   },
   "app": {
-    "title": "DeluxeMenus GUI Visual Editor",
+    "title": "DeluxeMenusEditorWeb",
     "subtitle": "Professional Minecraft DeluxeMenus Visual Designer",
     "templates": "Load Preset Templates",
     "import_yaml": "Import YAML",
