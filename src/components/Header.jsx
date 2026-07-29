@@ -1,10 +1,19 @@
 import React, { useState } from 'react';
 import { useI18n } from '../i18n';
-import { Globe, Download, Upload, Copy, Check, FileCode, PlusCircle, Sparkles } from 'lucide-react';
+import { Globe, Download, Upload, Copy, Check, FileCode, PlusCircle, Sparkles, RotateCcw, RotateCw } from 'lucide-react';
 import CustomLangModal from './CustomLangModal';
 import { SAMPLE_MENU, SAMPLE_SHOP, SAMPLE_VIP } from '../samples/samples';
 
-export default function Header({ onImportYaml, onExportYaml, onLoadTemplate, currentYaml }) {
+export default function Header({
+  onImportYaml,
+  onExportYaml,
+  onLoadTemplate,
+  currentYaml,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo
+}) {
   const { t, currentLang, setCurrentLang, availableLocales } = useI18n();
   const [copied, setCopied] = useState(false);
   const [showLangModal, setShowLangModal] = useState(false);
@@ -46,6 +55,30 @@ export default function Header({ onImportYaml, onExportYaml, onLoadTemplate, cur
 
       {/* Action Controls */}
       <div className="flex items-center gap-3">
+        {/* Undo / Redo Toolbar Buttons */}
+        <div className="flex items-center bg-slate-800/80 border border-slate-700/80 rounded-lg p-0.5 shadow-inner">
+          <button
+            onClick={onUndo}
+            disabled={!canUndo}
+            title="復原 (Ctrl + Z)"
+            className={`p-1.5 rounded transition flex items-center justify-center ${
+              canUndo ? 'text-slate-200 hover:bg-slate-700 hover:text-emerald-400 cursor-pointer' : 'text-slate-600 cursor-not-allowed'
+            }`}
+          >
+            <RotateCcw className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={onRedo}
+            disabled={!canRedo}
+            title="重做 (Ctrl + Y)"
+            className={`p-1.5 rounded transition flex items-center justify-center ${
+              canRedo ? 'text-slate-200 hover:bg-slate-700 hover:text-emerald-400 cursor-pointer' : 'text-slate-600 cursor-not-allowed'
+            }`}
+          >
+            <RotateCw className="w-4 h-4" />
+          </button>
+        </div>
         {/* Templates Selector */}
         <div className="relative group">
           <select

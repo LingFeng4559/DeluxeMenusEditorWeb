@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import MaterialSearchModal from './MaterialSearchModal';
 import RequirementPuzzleBuilder from './RequirementPuzzleBuilder';
+import PapiInput from './PapiInput';
+import ActionFlowBuilder from './ActionFlowBuilder';
 
 export default function ItemEditor({
   item,
@@ -422,11 +424,10 @@ export default function ItemEditor({
 
             <div>
               <label className="text-xs text-slate-400 block mb-1 font-medium">{t('item_editor.display_name')}</label>
-              <input
-                type="text"
+              <PapiInput
                 value={item?.display_name || ''}
-                onChange={(e) => handleChange('display_name', e.target.value)}
-                placeholder="e.g. &a&lSuper Sword"
+                onChange={(val) => handleChange('display_name', val)}
+                placeholder="例如: &a&l超級神劍 (%player_name%)"
                 className="w-full px-3 py-2 text-xs font-mono bg-slate-950 border border-slate-800 rounded-lg text-slate-200 focus:border-emerald-500 focus:outline-none"
               />
               <div className="mt-1.5 p-2 bg-slate-950/80 rounded-lg border border-slate-800/80 font-mono text-xs">
@@ -563,54 +564,11 @@ export default function ItemEditor({
               </select>
             </div>
 
-            {/* DeluxeMenus 15+ Rich Click Command Prefix Buttons */}
-            <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800 space-y-2">
-              <span className="text-[11px] text-teal-400 font-bold block">點擊一鍵插入 DeluxeMenus 官方動作前綴:</span>
-              <div className="flex flex-wrap gap-1">
-                {[
-                  { prefix: '[player]', desc: '玩家執行' },
-                  { prefix: '[console]', desc: '控制台執行' },
-                  { prefix: '[message]', desc: '發送訊息' },
-                  { prefix: '[broadcast]', desc: '全服廣播' },
-                  { prefix: '[sound]', desc: '播放音效' },
-                  { prefix: '[takemoney]', desc: '扣除金錢' },
-                  { prefix: '[takeexp]', desc: '扣除經驗' },
-                  { prefix: '[connect]', desc: '跨服切換' },
-                  { prefix: '[refresh]', desc: '刷新 GUI' },
-                  { prefix: '[openguimenu]', desc: '打開菜單' },
-                  { prefix: '[close]', desc: '關閉 GUI' },
-                  { prefix: '[meta]', desc: '設定 Metadata' }
-                ].map(({ prefix, desc }) => (
-                  <button
-                    key={prefix}
-                    onClick={() => handleAddCommand(`${prefix} `)}
-                    title={desc}
-                    className="px-2 py-0.5 text-[10px] font-mono bg-slate-900 hover:bg-slate-800 text-teal-300 border border-slate-800 hover:border-teal-500/50 rounded transition"
-                  >
-                    +{prefix}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-2 pt-1">
-              {commandsList.map((cmd, idx) => (
-                <div key={idx} className="flex gap-2 items-center">
-                  <input
-                    type="text"
-                    value={cmd}
-                    onChange={(e) => handleCommandChange(idx, e.target.value)}
-                    className="flex-1 px-3 py-1.5 text-xs font-mono bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:border-emerald-500 focus:outline-none"
-                  />
-                  <button
-                    onClick={() => handleRemoveCommand(idx)}
-                    className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
+            {/* Action Flow Visual Designer Component */}
+            <ActionFlowBuilder
+              commands={commandsList}
+              onChange={(nextCmds) => handleChange(clickType, nextCmds)}
+            />
           </div>
         )}
 

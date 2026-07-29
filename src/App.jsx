@@ -5,6 +5,7 @@ import GuiGrid from './components/GuiGrid';
 import ItemEditor from './components/ItemEditor';
 import MenuSettings from './components/MenuSettings';
 import YamlCodeEditor from './components/YamlCodeEditor';
+import TreeHierarchyExplorer from './components/TreeHierarchyExplorer';
 import { parseYamlToMenu, dumpMenuToYaml, DEFAULT_MENU } from './utils/yamlParser';
 import { clearTextureCache } from './utils/textureCache';
 import { Settings, UploadCloud, AlertTriangle } from 'lucide-react';
@@ -93,8 +94,53 @@ function AppContent() {
     silentAutoSync();
   }, []);
 
+  // Enterprise-Grade History Undo / Redo Stack (Max 50 steps)
+  const historyStackRef = useRef([]);
+  const redoStackRef = useRef([]);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+
+  const syncHistoryFlags = () => {
+    setCanUndo(historyStackRef.current.length > 0);
+    setCanRedo(redoStackRef.current.length > 0);
+  };
+
+  // Push current state to undo history before making changes
+  const pushUndoStep = useCallback((prevMenuState) => {
+    if (!prevMenuState) return;
+    historyStackRef.current.push(JSON.parse(JSON.stringify(prevMenuState)));
+    if (historyStackRef.current.length > 50) {
+      historyStackRef.current.shift();
+    }
+    redoStackRef.current = []; // Clear redo stack on new action
+    syncHistoryFlags();
+  }, []);
+
+  const handleUndo = useCallback(() => {
+    if (historyStackRef.current.length === 0) return;
+    const lastState = historyStackRef.current.pop();
+    redoStackRef.current.push(JSON.parse(JSON.stringify(menu)));
+    setMenu(lastState);
+    setYamlText(dumpMenuToYaml(lastState));
+    setYamlError(null);
+    syncHistoryFlags();
+  }, [menu]);
+
+  const handleRedo = useCallback(() => {
+    if (redoStackRef.current.length === 0) return;
+    const nextState = redoStackRef.current.pop();
+    historyStackRef.current.push(JSON.parse(JSON.stringify(menu)));
+    setMenu(nextState);
+    setYamlText(dumpMenuToYaml(nextState));
+    setYamlError(null);
+    syncHistoryFlags();
+  }, [menu]);
+
   // Sync menu state to YAML text
-  const updateMenuState = (newMenu, markAsDirty = true) => {
+  const updateMenuState = (newMenu, markAsDirty = true, saveHistory = true) => {
+    if (saveHistory) {
+      pushUndoStep(menu);
+    }
     setMenu(newMenu);
     const newYaml = dumpMenuToYaml(newMenu);
     setYamlText(newYaml);
@@ -138,8 +184,39 @@ function AppContent() {
     }, 300);
   };
 
+  // Global IDE Keyboard Shortcuts (Ctrl+Z, Ctrl+Y, Ctrl+S, Delete)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Ignore shortcut triggers when actively typing inside form inputs / textareas
+      const tagName = e.target.tagName.toLowerCase();
+      if (tagName === 'input' || tagName === 'textarea' || e.target.isContentEditable) {
+        return;
+      }
 
-  // Global Drag & Drop Handlers for YAML files
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          handleRedo();
+        } else {
+          handleUndo();
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        handleRedo();
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        handleExportYaml();
+      } else if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selectedSlot !== null) {
+          handleDeleteSlotItems(selectedSlot);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleUndo, handleRedo, selectedSlot]);
+
   useEffect(() => {
     const handleDragOver = (e) => {
       if (e.dataTransfer.types && Array.from(e.dataTransfer.types).includes('Files')) {
@@ -515,6 +592,10 @@ function AppContent() {
         onExportYaml={handleExportYaml}
         onLoadTemplate={handleLoadTemplate}
         currentYaml={yamlText}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        canUndo={canUndo}
+        canRedo={canRedo}
       />
 
       {/* Main Workspace Layout */}
@@ -545,6 +626,15 @@ function AppContent() {
             <span>{t('top_bar.global_settings')} (size: {menu.size})</span>
           </button>
         </div>
+
+        {/* IDE Tree Hierarchy Explorer Panel */}
+        <TreeHierarchyExplorer
+          menu={menu}
+          selectedSlot={selectedSlot}
+          onSelectSlot={handleSelectSlot}
+          onSelectPriorityItem={handleSelectPriorityItem}
+          activePriorityMap={activePriorityMap}
+        />
 
         {/* Center Grid + Right Property Editor Split View */}
         <div className="flex-1 flex gap-6 min-h-[500px]">
