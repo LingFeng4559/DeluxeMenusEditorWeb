@@ -1,12 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import zh_TW from './locales/zh_TW.json';
+import zh_CN from './locales/zh_CN.json';
 import en from './locales/en.json';
+import ja_JP from './locales/ja_JP.json';
 
 const I18nContext = createContext();
 
 const builtinLocales = {
   zh_TW: { name: '繁體中文', data: zh_TW },
-  en: { name: 'English', data: en }
+  zh_CN: { name: '简体中文', data: zh_CN },
+  en: { name: 'English', data: en },
+  ja_JP: { name: '日本語', data: ja_JP }
 };
 
 // Helper to normalize language codes (e.g., 'zh_tw', 'zh-tw' => 'zh_TW')
