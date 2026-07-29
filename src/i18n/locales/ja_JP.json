@@ -184,7 +184,14 @@
     "nbt_string": "NBT データタグ (nbt_string)",
     "nbt_placeholder": "例: CustomItemType:sword_lvl_1",
     "cmd_placeholder": "例: 10001",
-    "hide_flags_section": "アイテム詳細フラグ非表示 (Hide Flags):"
+    "hide_flags_section": "アイテム詳細フラグ非表示 (Hide Flags):",
+    "duplicate_item": "アイテムを複製",
+    "delete_item": "アイテムを削除",
+    "variant_switch_title": "スロット #{{slot}} バリアント切替 (全{{count}}個):",
+    "add_variant": "バリアント追加",
+    "editing_variant": "個別編集:",
+    "req_default": "デフォルト (常時表示)",
+    "req_custom": "カスタム条件"
   },
   "action_flow": {
     "add_step_hint": "ボタンをクリックしてアクションチェーンにステップを挿入:",

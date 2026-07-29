@@ -184,7 +184,14 @@
     "nbt_string": "NBT 數據標籤 (nbt_string)",
     "nbt_placeholder": "例如: CustomItemType:sword_lvl_1",
     "cmd_placeholder": "例如: 10001",
-    "hide_flags_section": "隱藏物品細節標籤 (Hide Flags):"
+    "hide_flags_section": "隱藏物品細節標籤 (Hide Flags):",
+    "duplicate_item": "複製當前物品",
+    "delete_item": "刪除當前物品",
+    "variant_switch_title": "槽位 #{{slot}} 變體切換 ({{count}} 個):",
+    "add_variant": "新增變體",
+    "editing_variant": "單獨編輯中",
+    "req_default": "預設 (無條件可見)",
+    "req_custom": "條件 (自訂)"
   },
   "action_flow": {
     "add_step_hint": "點擊按鈕向動作鏈中插入步驟 (Action Step):",
