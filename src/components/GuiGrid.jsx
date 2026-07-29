@@ -42,8 +42,38 @@ export default function GuiGrid({
   // Trash Zone Drag-Over state
   const [isDragOverTrash, setIsDragOverTrash] = useState(false);
 
-  const size = Math.max(9, Math.min(54, Number(menu.size) || 54));
-  const slotArray = Array.from({ length: size }, (_, i) => i);
+  // Dynamic Inventory Layout & Slot Count Calculator according to DeluxeMenus Specifications
+  const getInventoryLayout = (invType, rawSize) => {
+    const type = (invType || 'CHEST').toUpperCase();
+    switch (type) {
+      case 'HOPPER':
+        return { slots: 5, cols: 5, gridClass: 'grid-cols-5', label: 'Hopper (漏斗 5 槽)' };
+      case 'DISPENSER':
+      case 'DROPPER':
+        return { slots: 9, cols: 3, gridClass: 'grid-cols-3', label: 'Dispenser (發射器 3x3 9槽)' };
+      case 'ANVIL':
+        return { slots: 3, cols: 3, gridClass: 'grid-cols-3', label: 'Anvil (鐵砧 3 槽)' };
+      case 'WORKBENCH':
+      case 'CRAFTING':
+        return { slots: 9, cols: 9, gridClass: 'grid-cols-9', label: 'Crafting Table (工作台 9 槽)' };
+      case 'BEACON':
+        return { slots: 1, cols: 1, gridClass: 'grid-cols-1', label: 'Beacon (信標 1 槽)' };
+      case 'FURNACE':
+      case 'BLAST_FURNACE':
+      case 'SMOKER':
+        return { slots: 3, cols: 3, gridClass: 'grid-cols-3', label: 'Furnace (熔爐 3 槽)' };
+      case 'SHULKER_BOX':
+        return { slots: 27, cols: 9, gridClass: 'grid-cols-9', label: 'Shulker Box (界伏盒 27 槽)' };
+      case 'CHEST':
+      default: {
+        const size = Math.max(9, Math.min(54, Number(rawSize) || 54));
+        return { slots: size, cols: 9, gridClass: 'grid-cols-9', label: `Chest (箱子 ${size} 槽)` };
+      }
+    }
+  };
+
+  const currentLayout = getInventoryLayout(menu.inventory_type, menu.size);
+  const slotArray = Array.from({ length: currentLayout.slots }, (_, i) => i);
 
   // Sync titleInput when menu.menu_title changes
   useEffect(() => {
@@ -286,8 +316,8 @@ export default function GuiGrid({
           <div>
             <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
               {t('gui_grid.title')}
-              <span className="text-xs font-mono font-medium px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-400">
-                {size} {t('gui_grid.slot')}s
+              <span className="text-xs font-mono font-medium px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300">
+                {currentLayout.label}
               </span>
             </h2>
             <p className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
@@ -369,8 +399,8 @@ export default function GuiGrid({
               </span>
             </div>
 
-            {/* 9x6 Authentic Minecraft Slot Grid */}
-            <div className="grid grid-cols-9 gap-1 bg-[#8b8b8b] p-1 border-2 border-t-[#373737] border-l-[#373737] border-r-[#ffffff] border-b-[#ffffff]">
+            {/* Authentic Minecraft Slot Grid with Dynamic Inventory Type Layout */}
+            <div className={`grid ${currentLayout.gridClass} gap-1 bg-[#8b8b8b] p-1 border-2 border-t-[#373737] border-l-[#373737] border-r-[#ffffff] border-b-[#ffffff]`}>
               {slotArray.map((slotIndex) => {
                 const allSlotItems = getItemsAtSlot(slotIndex);
                 const activeVariantIdx = activePriorityMap[slotIndex] || 0;
@@ -433,8 +463,8 @@ export default function GuiGrid({
             </div>
           </div>
         ) : (
-          /* MODERN DARK GLASS GUI THEME */
-          <div className="grid grid-cols-9 gap-2 max-w-full overflow-x-auto p-4 bg-[#c6c6c6]/10 border-4 border-[#373737]/60 rounded-2xl shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] backdrop-blur-md">
+          /* MODERN DARK GLASS GUI THEME WITH DYNAMIC INVENTORY LAYOUT */
+          <div className={`grid ${currentLayout.gridClass} gap-2 max-w-full overflow-x-auto p-4 bg-[#c6c6c6]/10 border-4 border-[#373737]/60 rounded-2xl shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] backdrop-blur-md`}>
             {slotArray.map((slotIndex) => {
               const allSlotItems = getItemsAtSlot(slotIndex);
               const activeVariantIdx = activePriorityMap[slotIndex] || 0;
