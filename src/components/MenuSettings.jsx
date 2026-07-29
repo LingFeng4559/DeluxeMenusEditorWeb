@@ -40,7 +40,7 @@ export default function MenuSettings({ menu, onUpdateMenu, onClose }) {
             }`}
           >
             <Sliders className="w-3.5 h-3.5" />
-            <span>基本全域參數</span>
+            <span>{t('menu_settings.tab_basic')}</span>
           </button>
 
           <button
@@ -52,7 +52,7 @@ export default function MenuSettings({ menu, onUpdateMenu, onClose }) {
             }`}
           >
             <ShieldAlert className="w-3.5 h-3.5" />
-            <span>開啟條件 (open_requirement)</span>
+            <span>{t('menu_settings.tab_open_req')}</span>
           </button>
         </div>
 
@@ -67,7 +67,7 @@ export default function MenuSettings({ menu, onUpdateMenu, onClose }) {
                   type="text"
                   value={menu.menu_title || ''}
                   onChange={(e) => handleChange('menu_title', e.target.value)}
-                  placeholder="例如: &6&l菜單 或 <shift:-37><glyph:brgui1>&6菜單"
+                  placeholder="e.g. &6&lMain Menu"
                   className="w-full px-3.5 py-2.5 text-xs font-mono bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-emerald-500 focus:outline-none"
                 />
                 <p className="text-[11px] text-slate-500 mt-1">{t('menu_settings.menu_title_hint')}</p>
@@ -88,14 +88,14 @@ export default function MenuSettings({ menu, onUpdateMenu, onClose }) {
                     type="text"
                     value={menu.open_command || ''}
                     onChange={(e) => handleChange('open_command', e.target.value)}
-                    placeholder="例如: menu 或 cd"
+                    placeholder="e.g. menu"
                     className="w-full px-3.5 py-2.5 text-xs font-mono bg-slate-950 border border-slate-800 rounded-xl text-emerald-400 font-bold focus:border-emerald-500 focus:outline-none"
                   />
                 </div>
 
                 <div className="flex flex-col justify-end">
                   <label className="flex items-center justify-between p-2.5 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-700 transition">
-                    <span className="text-xs text-slate-300">註冊主指令</span>
+                    <span className="text-xs text-slate-300">{t('menu_settings.register_command')}</span>
                     <input
                       type="checkbox"
                       checked={menu.register_command !== false}
@@ -115,12 +115,12 @@ export default function MenuSettings({ menu, onUpdateMenu, onClose }) {
                     onChange={(e) => handleChange('size', parseInt(e.target.value))}
                     className="w-full px-3.5 py-2.5 text-xs bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none"
                   >
-                    <option value={9}>9 (1 行)</option>
-                    <option value={18}>18 (2 行)</option>
-                    <option value={27}>27 (3 行)</option>
-                    <option value={36}>36 (4 行)</option>
-                    <option value={45}>45 (5 行)</option>
-                    <option value={54}>54 (6 行 - 標準全頁)</option>
+                    <option value={9}>{t('menu_settings.size_1_row')}</option>
+                    <option value={18}>{t('menu_settings.size_2_rows')}</option>
+                    <option value={27}>{t('menu_settings.size_3_rows')}</option>
+                    <option value={36}>{t('menu_settings.size_4_rows')}</option>
+                    <option value={45}>{t('menu_settings.size_5_rows')}</option>
+                    <option value={54}>{t('menu_settings.size_6_rows')}</option>
                   </select>
                 </div>
 
@@ -131,11 +131,12 @@ export default function MenuSettings({ menu, onUpdateMenu, onClose }) {
                     onChange={(e) => handleChange('inventory_type', e.target.value)}
                     className="w-full px-3.5 py-2.5 text-xs bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none"
                   >
-                    <option value="CHEST">CHEST (箱子)</option>
-                    <option value="WORKBENCH">WORKBENCH (工作台)</option>
-                    <option value="HOPPER">HOPPER (漏斗)</option>
-                    <option value="DISPENSER">DISPENSER (發射器)</option>
-                    <option value="ANVIL">ANVIL (鐵砧)</option>
+                    <option value="CHEST">{t('menu_settings.type_chest')}</option>
+                    <option value="WORKBENCH">{t('menu_settings.type_workbench')}</option>
+                    <option value="HOPPER">{t('menu_settings.type_hopper')}</option>
+                    <option value="DISPENSER">{t('menu_settings.type_dropper')}</option>
+                    <option value="ANVIL">{t('menu_settings.type_anvil')}</option>
+                    <option value="FURNACE">{t('menu_settings.type_furnace')}</option>
                   </select>
                 </div>
               </div>
@@ -155,25 +156,25 @@ export default function MenuSettings({ menu, onUpdateMenu, onClose }) {
 
           {activeTab === 'open_requirement' && (
             <div className="space-y-3">
-              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 text-xs">
-                💡 <b>開啟條件 (open_requirement)</b>：當玩家嘗試輸入開啟指令 (如 <code>/{menu.open_command || 'menu'}</code>) 時，只有當滿足此處的 Scratch 積木條件時才允許打開 GUI 選單；否則將執行處罰/拒絕指令 (deny_commands)。
+              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 text-xs leading-relaxed">
+                {t('menu_settings.open_req_tip')}
               </div>
 
               <RequirementPuzzleBuilder
                 value={menu.open_requirement}
-                onChange={(nextReq) => handleChange('open_requirement', nextReq)}
+                onChange={(nextOpenReqVal) => handleChange('open_requirement', nextOpenReqVal)}
               />
             </div>
           )}
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-4 bg-slate-900/50 border-t border-slate-800 flex justify-end">
+        <div className="px-6 py-3.5 border-t border-slate-800 flex justify-end">
           <button
             onClick={onClose}
             className="px-5 py-2 text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl transition shadow"
           >
-            完成設定
+            {t('menu_settings.done_btn')}
           </button>
         </div>
       </div>

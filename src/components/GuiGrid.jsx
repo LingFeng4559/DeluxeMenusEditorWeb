@@ -47,27 +47,28 @@ export default function GuiGrid({
     const type = (invType || 'CHEST').toUpperCase();
     switch (type) {
       case 'HOPPER':
-        return { slots: 5, cols: 5, gridClass: 'grid-cols-5', label: 'Hopper (漏斗 5 槽)' };
+        return { slots: 5, cols: 5, gridClass: 'grid-cols-5', label: t('gui_grid.layout.hopper') };
       case 'DISPENSER':
       case 'DROPPER':
-        return { slots: 9, cols: 3, gridClass: 'grid-cols-3', label: 'Dispenser (發射器 3x3 9槽)' };
+        return { slots: 9, cols: 3, gridClass: 'grid-cols-3', label: t('gui_grid.layout.dispenser') };
       case 'ANVIL':
-        return { slots: 3, cols: 3, gridClass: 'grid-cols-3', label: 'Anvil (鐵砧 3 槽)' };
+        return { slots: 3, cols: 3, gridClass: 'grid-cols-3', label: t('gui_grid.layout.anvil') };
       case 'WORKBENCH':
       case 'CRAFTING':
-        return { slots: 9, cols: 9, gridClass: 'grid-cols-9', label: 'Crafting Table (工作台 9 槽)' };
+        return { slots: 9, cols: 9, gridClass: 'grid-cols-9', label: t('gui_grid.layout.workbench') };
       case 'BEACON':
-        return { slots: 1, cols: 1, gridClass: 'grid-cols-1', label: 'Beacon (信標 1 槽)' };
+        return { slots: 1, cols: 1, gridClass: 'grid-cols-1', label: t('gui_grid.layout.beacon') };
       case 'FURNACE':
       case 'BLAST_FURNACE':
       case 'SMOKER':
-        return { slots: 3, cols: 3, gridClass: 'grid-cols-3', label: 'Furnace (熔爐 3 槽)' };
+        return { slots: 3, cols: 3, gridClass: 'grid-cols-3', label: t('gui_grid.layout.furnace') };
       case 'SHULKER_BOX':
         return { slots: 27, cols: 9, gridClass: 'grid-cols-9', label: 'Shulker Box (界伏盒 27 槽)' };
       case 'CHEST':
       default: {
-        const size = Math.max(9, Math.min(54, Number(rawSize) || 54));
-        return { slots: size, cols: 9, gridClass: 'grid-cols-9', label: `Chest (箱子 ${size} 槽)` };
+        const size = rawSize || 54;
+        const rows = Math.min(6, Math.max(1, Math.ceil(size / 9)));
+        return { slots: size, cols: 9, gridClass: 'grid-cols-9', label: t('gui_grid.layout.chest', { size }) };
       }
     }
   };

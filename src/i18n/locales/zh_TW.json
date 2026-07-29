@@ -29,13 +29,37 @@
     "tag_oak_sign": "告示牌"
   },
   "menu_settings": {
-    "title": "全域選單設定 (Menu Settings)",
+    "title": "全域選單設定 (Global Menu Settings)",
+    "tab_basic": "基本全域參數",
+    "tab_open_req": "開啟條件 (open_requirement)",
     "menu_title": "選單顯示標題 (menu_title):",
     "menu_title_hint": "支援 Minecraft & 彩色符號與 %player_name% 變數",
     "open_command": "開啟命令 (open_command):",
+    "register_command": "註冊主指令",
     "size": "GUI 槽位總數 (size):",
+    "size_6_rows": "54 (6 行 - 標準全頁)",
+    "size_5_rows": "45 (5 行)",
+    "size_4_rows": "36 (4 行)",
+    "size_3_rows": "27 (3 行)",
+    "size_2_rows": "18 (2 行)",
+    "size_1_row": "9 (1 行)",
     "inventory_type": "容器類型 (inventory_type):",
-    "update_interval": "自動更新頻率秒數 (update_interval):"
+    "type_chest": "CHEST (大箱子)",
+    "type_hopper": "HOPPER (漏斗 - 5 槽)",
+    "type_dropper": "DROPPER / DISPENSER (3x3 網格)",
+    "type_anvil": "ANVIL (鐵砧 - 3 槽)",
+    "type_workbench": "WORKBENCH (工作台 - 9 槽)",
+    "type_furnace": "FURNACE (熔爐 - 3 槽)",
+    "update_interval": "自動更新頻率秒數 (update_interval):",
+    "open_req_tip": "💡 開啟條件 (open_requirement) ：當玩家嘗試輸入開啟指令 (如 /menu) 時，只有當滿足此處的 Scratch 積木條件時才允許打開 GUI 選單；否則將執行處罰/拒絕指令 (deny_commands)。",
+    "done_btn": "完成設定"
+  },
+  "tree_explorer": {
+    "title": "項目結構樹 (Tree Hierarchy Explorer)",
+    "slots_count": "{{count}} 個槽位",
+    "search_placeholder": "過濾 Key / 材質 / 標題...",
+    "priority_variants": "{{count}} 個優先級變體",
+    "no_matching": "無匹配的選單項目"
   },
   "code_editor": {
     "title": "YAML 原始碼即時編輯與同步",
@@ -59,6 +83,15 @@
     "switch_mc_gui": "切換 MC 100% 原生 GUI",
     "drag_hint": "右鍵可選複製/剪下/貼上/刪除 | 拖曳至下方垃圾桶可快速刪除",
     "trash_hint": "拖曳物品至此處垃圾桶即可刪除",
+    "layout": {
+      "hopper": "HOPPER (漏斗 5 槽)",
+      "dispenser": "DISPENSER (發射器 3x3 網格 9 槽)",
+      "anvil": "ANVIL (鐵砧 3 槽)",
+      "workbench": "WORKBENCH (工作台 9 槽)",
+      "beacon": "BEACON (信標 1 槽)",
+      "furnace": "FURNACE (熔爐 3 槽)",
+      "chest": "CHEST (箱子 {{size}} 槽)"
+    },
     "trash_release": "放開滑鼠以刪除此物品",
     "context_options": "選單",
     "context_copy": "複製 (Copy)",

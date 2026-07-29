@@ -30,12 +30,36 @@
   },
   "menu_settings": {
     "title": "Global Menu Settings",
+    "tab_basic": "Basic Settings",
+    "tab_open_req": "Open Requirement (open_requirement)",
     "menu_title": "Menu Display Title (menu_title):",
     "menu_title_hint": "Supports Minecraft & color codes and %player_name% placeholder",
     "open_command": "Open Command (open_command):",
+    "register_command": "Register Command",
     "size": "GUI Total Slots (size):",
+    "size_6_rows": "54 (6 Rows - Full Chest)",
+    "size_5_rows": "45 (5 Rows)",
+    "size_4_rows": "36 (4 Rows)",
+    "size_3_rows": "27 (3 Rows)",
+    "size_2_rows": "18 (2 Rows)",
+    "size_1_row": "9 (1 Row)",
     "inventory_type": "Container Type (inventory_type):",
-    "update_interval": "Auto Update Interval Seconds (update_interval):"
+    "type_chest": "CHEST (Chest)",
+    "type_hopper": "HOPPER (Hopper - 5 slots)",
+    "type_dropper": "DROPPER / DISPENSER (3x3 grid)",
+    "type_anvil": "ANVIL (Anvil - 3 slots)",
+    "type_workbench": "WORKBENCH (Workbench - 9 slots)",
+    "type_furnace": "FURNACE (Furnace - 3 slots)",
+    "update_interval": "Auto Update Interval Seconds (update_interval):",
+    "open_req_tip": "💡 Open Requirement (open_requirement): When player tries to execute open command (e.g. /menu), GUI opens only if Scratch conditions are met; otherwise deny_commands will be executed.",
+    "done_btn": "Done"
+  },
+  "tree_explorer": {
+    "title": "Tree Hierarchy Explorer",
+    "slots_count": "{{count}} Slots",
+    "search_placeholder": "Filter Key / Material / Title...",
+    "priority_variants": "{{count}} Priority Variants",
+    "no_matching": "No matching menu items"
   },
   "code_editor": {
     "title": "YAML Source Code Live Edit & Sync",
@@ -53,6 +77,15 @@
     "switch_mc_gui": "Switch MC Native GUI",
     "drag_hint": "Right-click to Copy/Cut/Paste/Delete | Drag to bottom Trash Can to quick delete",
     "trash_hint": "Drag items here to Trash Can to delete",
+    "layout": {
+      "hopper": "HOPPER (Hopper - 5 Slots)",
+      "dispenser": "DISPENSER (Dispenser 3x3 Grid - 9 Slots)",
+      "anvil": "ANVIL (Anvil - 3 Slots)",
+      "workbench": "WORKBENCH (Workbench - 9 Slots)",
+      "beacon": "BEACON (Beacon - 1 Slot)",
+      "furnace": "FURNACE (Furnace - 3 Slots)",
+      "chest": "CHEST (Chest - {{size}} Slots)"
+    },
     "trash_release": "Release mouse to delete item",
     "context_options": "Options",
     "context_copy": "Copy",
