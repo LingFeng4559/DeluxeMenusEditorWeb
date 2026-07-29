@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import {
-  Puzzle, Plus, Trash2, Key, DollarSign, Scale, AlertCircle, Layers, GripVertical, ArrowDown
+  Puzzle, Plus, Trash2, Key, DollarSign, Scale, AlertCircle, Layers, GripVertical, ArrowDown, Volume2
 } from 'lucide-react';
+import { getSoundChineseName } from '../utils/minecraftSounds';
+import SoundSearchModal from './SoundSearchModal';
 
 export default function RequirementPuzzleBuilder({ value, onChange }) {
   const [draggedType, setDraggedType] = useState(null);
+  const [soundTargetIdx, setSoundTargetIdx] = useState(null);
 
   // Safety fallback for current view_requirement structure
   const viewReq = value || {};
@@ -299,25 +302,61 @@ export default function RequirementPuzzleBuilder({ value, onChange }) {
           </div>
 
           <div className="space-y-1.5">
-            {denyCommands.map((cmd, idx) => (
-              <div key={idx} className="flex gap-1.5 items-center">
-                <input
-                  type="text"
-                  value={cmd}
-                  onChange={(e) => handleUpdateDenyCommand(idx, e.target.value)}
-                  className="flex-1 px-2.5 py-1 text-xs font-mono bg-slate-900 border border-slate-800 rounded-lg text-rose-300 focus:outline-none"
-                />
-                <button
-                  onClick={() => handleDeleteDenyCommand(idx)}
-                  className="p-1 text-slate-500 hover:text-rose-400"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ))}
+            {denyCommands.map((cmd, idx) => {
+              const isSound = cmd.trim().startsWith('[sound]');
+              const soundId = isSound ? cmd.trim().slice(7).trim() : '';
+              const zhName = isSound ? getSoundChineseName(soundId) : '';
+
+              return (
+                <div key={idx} className="space-y-1">
+                  <div className="flex gap-1.5 items-center">
+                    <input
+                      type="text"
+                      value={cmd}
+                      onChange={(e) => handleUpdateDenyCommand(idx, e.target.value)}
+                      className="flex-1 px-2.5 py-1 text-xs font-mono bg-slate-900 border border-slate-800 rounded-lg text-rose-300 focus:outline-none"
+                    />
+
+                    {isSound && (
+                      <button
+                        type="button"
+                        onClick={() => setSoundTargetIdx(idx)}
+                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 rounded text-xs font-bold transition flex items-center gap-1 shrink-0"
+                      >
+                        <Volume2 className="w-3 h-3" /> 音效庫
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteDenyCommand(idx)}
+                      className="p-1 text-slate-500 hover:text-rose-400"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {isSound && soundId && (
+                    <div className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 w-fit">
+                      🎵 音效註解: {zhName || '自訂特殊音效'}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
+
+      {soundTargetIdx !== null && (
+        <SoundSearchModal
+          onClose={() => setSoundTargetIdx(null)}
+          onSelect={(soundId) => {
+            handleUpdateDenyCommand(soundTargetIdx, `[sound] ${soundId}`);
+            setSoundTargetIdx(null);
+          }}
+        />
+      )}
     </div>
   );
 }

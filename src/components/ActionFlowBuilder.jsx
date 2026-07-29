@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Zap, Plus, Trash2, ArrowUp, ArrowDown, Terminal, DollarSign, Award, Volume2, MessageSquare, Globe, ArrowRightLeft, RefreshCw, Layers, LogOut, Check
 } from 'lucide-react';
+import { getSoundChineseName } from '../utils/minecraftSounds';
+import SoundSearchModal from './SoundSearchModal';
 
 const ACTION_TYPES = [
   { prefix: '[player]', label: '玩家指令', desc: '玩家角度執行命令', icon: Terminal, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' },
@@ -17,6 +19,7 @@ const ACTION_TYPES = [
 ];
 
 export default function ActionFlowBuilder({ commands = [], onChange }) {
+  const [soundTargetIdx, setSoundTargetIdx] = useState(null);
   const getActionMeta = (cmdStr) => {
     const matched = ACTION_TYPES.find((a) => cmdStr.trim().startsWith(a.prefix));
     if (matched) {
@@ -155,14 +158,35 @@ export default function ActionFlowBuilder({ commands = [], onChange }) {
 
                 {/* Content Input Field */}
                 {meta.prefix !== '[close]' && meta.prefix !== '[refresh]' && (
-                  <div className="flex items-center gap-2 pt-0.5">
-                    <input
-                      type="text"
-                      value={meta.content}
-                      onChange={(e) => handleUpdateActionContent(idx, e.target.value, meta.prefix)}
-                      placeholder={`輸入 ${meta.label} 內容...`}
-                      className="w-full px-3 py-1.5 text-xs font-mono bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:border-emerald-500 focus:outline-none"
-                    />
+                  <div className="space-y-1 pt-0.5">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={meta.content}
+                        onChange={(e) => handleUpdateActionContent(idx, e.target.value, meta.prefix)}
+                        placeholder={`輸入 ${meta.label} 內容...`}
+                        className="flex-1 px-3 py-1.5 text-xs font-mono bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:border-emerald-500 focus:outline-none"
+                      />
+
+                      {meta.prefix === '[sound]' && (
+                        <button
+                          type="button"
+                          onClick={() => setSoundTargetIdx(idx)}
+                          className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-pink-300 border border-slate-700 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0"
+                        >
+                          <Volume2 className="w-3.5 h-3.5" />
+                          <span>音效庫</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Chinese Sound Name Badge for [sound] */}
+                    {meta.prefix === '[sound]' && meta.content && (
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-pink-400 bg-pink-500/10 px-2 py-0.5 rounded border border-pink-500/20 w-fit">
+                        <span>🎵 官方註解:</span>
+                        <span>{getSoundChineseName(meta.content) || '自訂特殊音效'}</span>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -174,6 +198,16 @@ export default function ActionFlowBuilder({ commands = [], onChange }) {
           </div>
         )}
       </div>
+
+      {soundTargetIdx !== null && (
+        <SoundSearchModal
+          onClose={() => setSoundTargetIdx(null)}
+          onSelect={(soundId) => {
+            handleUpdateActionContent(soundTargetIdx, soundId, '[sound]');
+            setSoundTargetIdx(null);
+          }}
+        />
+      )}
     </div>
   );
 }
