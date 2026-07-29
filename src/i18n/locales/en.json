@@ -4,7 +4,12 @@
     "import_yaml": "Import YAML",
     "export_yaml": "Export YAML",
     "load_sample": "Load Sample",
-    "custom_lang": "Language & Assets"
+    "custom_lang": "Language & Assets",
+    "undo": "Undo (Ctrl + Z)",
+    "redo": "Redo (Ctrl + Y)",
+    "sample_menu": "Default Tutorial Menu (menu.yml)",
+    "sample_shop": "Shop Menu (shop.yml)",
+    "sample_vip": "VIP Kit Menu (vip.yml)"
   },
   "app": {
     "title": "DeluxeMenusEditorWeb",
@@ -26,7 +31,38 @@
     "tag_diamond_sword": "Diamond Sword",
     "tag_clock": "Clock",
     "tag_chest": "Chest",
-    "tag_oak_sign": "Oak Sign"
+    "tag_oak_sign": "Oak Sign",
+    "search_placeholder": "Search name, keyword or Material ID (e.g. DIAMOND_SWORD)...",
+    "builtin_dict_tip": "Built-in 1.12 ~ 1.26 Material Library",
+    "popular_tags": "Popular Tags:"
+  },
+  "sound_modal": {
+    "title": "Minecraft Sound Library (Sound Picker)",
+    "subtitle": "Supports online audio preview simulation",
+    "search_placeholder": "Search sound description, tags or ID...",
+    "cat_all": "All Categories",
+    "btn_preview": "Play Sound",
+    "btn_select": "Select",
+    "no_results": "No matching sounds found. Try searching another keyword or category."
+  },
+  "papi_input": {
+    "title": "PAPI Placeholder IntelliSense Autocomplete",
+    "click_hint": "Click to insert",
+    "no_results": "No matching PlaceholderAPI variables found",
+    "desc_player_name": "Player name / username",
+    "desc_player_displayname": "Player display name (with prefix/color)",
+    "desc_player_uuid": "Player UUID",
+    "desc_player_level": "Player XP level",
+    "desc_player_exp": "Player current XP points",
+    "desc_perm_check": "Check if player holds specific permission node",
+    "desc_vault_eco": "Vault economy balance (formatted)",
+    "desc_vault_eco_fixed": "Vault economy balance (raw integer)",
+    "desc_vault_group": "Vault primary permission group name",
+    "desc_luckperms_group": "LuckPerms primary group name",
+    "desc_luckperms_expiry": "Permission expiry remaining time",
+    "desc_server_online": "Server current online player count",
+    "desc_server_max": "Server max player capacity",
+    "desc_server_tps": "Server 1-minute average TPS"
   },
   "menu_settings": {
     "title": "Global Menu Settings",
@@ -97,6 +133,11 @@
   "item_editor": {
     "title": "Item Properties Editor",
     "no_item_selected": "Click a slot on the left GUI grid to start editing",
+    "slot_empty_title": "Slot #{{slot}} is currently empty",
+    "slot_empty_desc": "Click buttons below to create a new item in this slot and set material & properties.",
+    "create_default_stone": "Create Default Item (STONE)",
+    "create_with_picker": "Open Material Picker to Create",
+    "clear_req": "Clear Current Requirements",
     "tab_basic": "Basic",
     "tab_lore": "Lore",
     "tab_commands": "Commands",

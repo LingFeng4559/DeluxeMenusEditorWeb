@@ -58,9 +58,9 @@ export default function ItemEditor({
         <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-4 shadow-inner">
           <Plus className="w-8 h-8 animate-pulse" />
         </div>
-        <h3 className="text-base font-bold text-slate-200 mb-1">槽位 #{selectedSlot} 目前為空</h3>
+        <h3 className="text-base font-bold text-slate-200 mb-1">{t('item_editor.slot_empty_title', { slot: selectedSlot })}</h3>
         <p className="text-xs text-slate-400 mb-6 max-w-[240px]">
-          點擊下方按鈕以在此槽位建立新物品，並設定材質與屬性。
+          {t('item_editor.slot_empty_desc')}
         </p>
 
         <div className="w-full space-y-3">
@@ -69,7 +69,7 @@ export default function ItemEditor({
             className="w-full py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl transition text-xs flex items-center justify-center gap-2 shadow-lg hover:shadow-emerald-500/20"
           >
             <Plus className="w-4 h-4" />
-            <span>建立預設物品 (STONE)</span>
+            <span>{t('item_editor.create_default_stone')}</span>
           </button>
 
           <button
@@ -77,7 +77,7 @@ export default function ItemEditor({
             className="w-full py-2 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold rounded-xl transition text-xs flex items-center justify-center gap-2"
           >
             <Search className="w-4 h-4 text-cyan-400" />
-            <span>開啟材質庫選擇材質創建</span>
+            <span>{t('item_editor.create_with_picker')}</span>
           </button>
         </div>
 
@@ -586,7 +586,7 @@ export default function ItemEditor({
                 }`}
               >
                 <ShieldAlert className="w-3.5 h-3.5" />
-                <span>顯示條件 (view_requirement)</span>
+                <span>{t('puzzle_builder.view_req_tab')}</span>
               </button>
 
               <button
@@ -598,7 +598,7 @@ export default function ItemEditor({
                 }`}
               >
                 <Terminal className="w-3.5 h-3.5" />
-                <span>點擊條件 (click_requirement)</span>
+                <span>{t('puzzle_builder.click_req_tab')}</span>
               </button>
             </div>
 
@@ -622,7 +622,7 @@ export default function ItemEditor({
                   className="px-3 py-1.5 text-xs text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-lg hover:bg-rose-500/20 transition flex items-center gap-1 font-bold"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
-                  <span>清除當前條件</span>
+                  <span>{t('item_editor.clear_req')}</span>
                 </button>
               </div>
             )}

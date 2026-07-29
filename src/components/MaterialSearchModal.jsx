@@ -91,7 +91,7 @@ export default function MaterialSearchModal({ onClose, onSelect }) {
             <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
               {t('search_modal.title')}
               <span className="text-xs bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 font-normal px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                <Globe2 className="w-3 h-3 text-cyan-400" /> 內建 1.17 ~ 1.26 最新字典
+                <Globe2 className="w-3 h-3 text-cyan-400" /> {t('search_modal.builtin_dict_tip')}
               </span>
             </h3>
           </div>
@@ -106,7 +106,7 @@ export default function MaterialSearchModal({ onClose, onSelect }) {
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
             <input
               type="text"
-              placeholder="輸入中文、英文或 1.26 最新 Material (例如: SMALL_DRIPLEAF, LEAF_LITTER, CACTUS_FLOWER)..."
+              placeholder={t('search_modal.search_placeholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:border-emerald-500 focus:outline-none"
@@ -116,7 +116,7 @@ export default function MaterialSearchModal({ onClose, onSelect }) {
           {/* Quick Search Tag Chips */}
           <div className="flex flex-wrap gap-1.5 pt-1">
             <span className="text-[11px] text-slate-400 flex items-center gap-1 font-medium mr-1">
-              <Sparkles className="w-3 h-3 text-amber-400" /> 最新熱門標籤:
+              <Sparkles className="w-3 h-3 text-amber-400" /> {t('search_modal.popular_tags')}
             </span>
             {quickSearchTags.map((tag, idx) => (
               <button

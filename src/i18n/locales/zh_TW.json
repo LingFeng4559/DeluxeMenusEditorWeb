@@ -4,7 +4,12 @@
     "import_yaml": "匯入 YAML",
     "export_yaml": "匯出 YAML",
     "load_sample": "載入範例",
-    "custom_lang": "語系與資產同步"
+    "custom_lang": "語系與資產同步",
+    "undo": "復原 (Ctrl + Z)",
+    "redo": "重做 (Ctrl + Y)",
+    "sample_menu": "教學/預設選單 (menu.yml)",
+    "sample_shop": "商店選單 (shop.yml)",
+    "sample_vip": "VIP 禮包選單 (vip.yml)"
   },
   "app": {
     "title": "DeluxeMenusEditorWeb",
@@ -26,7 +31,38 @@
     "tag_diamond_sword": "鑽石劍",
     "tag_clock": "時鐘",
     "tag_chest": "箱子",
-    "tag_oak_sign": "告示牌"
+    "tag_oak_sign": "告示牌",
+    "search_placeholder": "輸入名稱、英文或 Material ID (如: DIAMOND_SWORD)...",
+    "builtin_dict_tip": "內建 1.12 ~ 1.26 最新材質庫",
+    "popular_tags": "最新熱門標籤:"
+  },
+  "sound_modal": {
+    "title": "Minecraft 音效庫 (Sound Picker)",
+    "subtitle": "支援線上模擬播放與多國搜尋",
+    "search_placeholder": "搜尋音效說明、標籤 (如: 村民, 升級, no) 或英文 ID...",
+    "cat_all": "全部類別",
+    "btn_preview": "試聽音效",
+    "btn_select": "選用",
+    "no_results": "無匹配的音效，請嘗試搜尋別的關鍵字或切換類別"
+  },
+  "papi_input": {
+    "title": "PAPI 變數 IntelliSense 自動補全",
+    "click_hint": "點擊選擇插入",
+    "no_results": "未找到匹配的 PlaceholderAPI 變數",
+    "desc_player_name": "玩家遊戲暱稱",
+    "desc_player_displayname": "玩家顯示名稱 (帶稱號/顏色)",
+    "desc_player_uuid": "玩家 UUID",
+    "desc_player_level": "玩家經驗等級 (Level)",
+    "desc_player_exp": "玩家當前經驗值",
+    "desc_perm_check": "檢查玩家是否持有特定權限",
+    "desc_vault_eco": "Vault 金錢餘額 (格式化)",
+    "desc_vault_eco_fixed": "Vault 金錢餘額 (無小數)",
+    "desc_vault_group": "Vault 主權限組名稱",
+    "desc_luckperms_group": "LuckPerms 主要權限組名稱",
+    "desc_luckperms_expiry": "權限剩餘有效時間",
+    "desc_server_online": "伺服器目前線上人數",
+    "desc_server_max": "伺服器最大可容納人數",
+    "desc_server_tps": "伺服器 1 分鐘平均 TPS"
   },
   "menu_settings": {
     "title": "全域選單設定 (Global Menu Settings)",
@@ -103,6 +139,11 @@
   "item_editor": {
     "title": "物品屬性編輯器",
     "no_item_selected": "請在左側 GUI 點擊選取一個槽位以開始編輯",
+    "slot_empty_title": "槽位 #{{slot}} 目前為空",
+    "slot_empty_desc": "點擊下方按鈕以在此槽位建立新物品，並設定材質與屬性。",
+    "create_default_stone": "建立預設物品 (STONE)",
+    "create_with_picker": "開啟材質庫選擇材質創建",
+    "clear_req": "清除當前條件",
     "tab_basic": "基礎",
     "tab_lore": "Lore",
     "tab_commands": "指令",

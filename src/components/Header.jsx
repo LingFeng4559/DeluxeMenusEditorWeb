@@ -60,7 +60,7 @@ export default function Header({
           <button
             onClick={onUndo}
             disabled={!canUndo}
-            title="復原 (Ctrl + Z)"
+            title={t('header.undo')}
             className={`p-1.5 rounded transition flex items-center justify-center ${
               canUndo ? 'text-slate-200 hover:bg-slate-700 hover:text-emerald-400 cursor-pointer' : 'text-slate-600 cursor-not-allowed'
             }`}
@@ -71,7 +71,7 @@ export default function Header({
           <button
             onClick={onRedo}
             disabled={!canRedo}
-            title="重做 (Ctrl + Y)"
+            title={t('header.redo')}
             className={`p-1.5 rounded transition flex items-center justify-center ${
               canRedo ? 'text-slate-200 hover:bg-slate-700 hover:text-emerald-400 cursor-pointer' : 'text-slate-600 cursor-not-allowed'
             }`}
@@ -92,9 +92,9 @@ export default function Header({
             className="px-3.5 py-2 text-xs font-semibold bg-slate-800/90 text-slate-200 border border-slate-700/80 rounded-lg hover:border-emerald-500/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition cursor-pointer"
           >
             <option value="" disabled>{t('app.templates')}</option>
-            <option value="menu">教學/預設選單 (menu.yml)</option>
-            <option value="shop">商店選單 (shop.yml)</option>
-            <option value="vip">VIP 禮包選單 (vip.yml)</option>
+            <option value="menu">{t('header.sample_menu')}</option>
+            <option value="shop">{t('header.sample_shop')}</option>
+            <option value="vip">{t('header.sample_vip')}</option>
           </select>
         </div>
 
