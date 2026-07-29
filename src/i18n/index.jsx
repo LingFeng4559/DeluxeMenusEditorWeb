@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import zh_TW from './locales/zh_TW.json';
 import en from './locales/en.json';
 
@@ -31,15 +31,15 @@ export const I18nProvider = ({ children }) => {
     localStorage.setItem('dme_custom_locales', JSON.stringify(customLocales));
   }, [customLocales]);
 
-  const addCustomLocale = (code, name, jsonObject) => {
+  const addCustomLocale = useCallback((code, name, jsonObject) => {
     setCustomLocales(prev => ({
       ...prev,
       [code]: { name, data: jsonObject }
     }));
     setCurrentLang(code);
-  };
+  }, []);
 
-  const removeCustomLocale = (code) => {
+  const removeCustomLocale = useCallback((code) => {
     setCustomLocales(prev => {
       const next = { ...prev };
       delete next[code];
@@ -48,14 +48,15 @@ export const I18nProvider = ({ children }) => {
     if (currentLang === code) {
       setCurrentLang('zh_TW');
     }
-  };
+  }, [currentLang]);
 
-  const availableLocales = {
+  const availableLocales = useMemo(() => ({
     ...builtinLocales,
     ...customLocales
-  };
+  }), [customLocales]);
 
-  const t = (keyPath, params = {}) => {
+  // useCallback: 確保切換語言時 t 的 reference 一定更新，帶動所有 UI 重新翻譯
+  const t = useCallback((keyPath, params = {}) => {
     const activeData = availableLocales[currentLang]?.data || builtinLocales.zh_TW.data;
     const keys = keyPath.split('.');
     let val = activeData;
@@ -82,20 +83,17 @@ export const I18nProvider = ({ children }) => {
       return val.replace(/\{\{(\w+)\}\}/g, (_, k) => params[k] !== undefined ? params[k] : `{{${k}}}`);
     }
     return val || keyPath;
-  };
+  }, [currentLang, availableLocales]);
 
-  // useMemo: 避免 context value 每次重渲染產生新物件，防止所有消費者無謂重繪
   const contextValue = useMemo(() => ({
     currentLang,
     setCurrentLang,
     availableLocales,
     addCustomLocale,
-    // BUG-1 修復：加入別名，讓 App.jsx 與 CustomLangModal.jsx 的舊呼叫不再崩潰
     addCustomLanguage: addCustomLocale,
     removeCustomLocale,
     t
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [currentLang, availableLocales]);
+  }), [currentLang, availableLocales, addCustomLocale, removeCustomLocale, t]);
 
   return (
     <I18nContext.Provider value={contextValue}>
