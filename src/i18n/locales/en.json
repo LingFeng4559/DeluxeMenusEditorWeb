@@ -14,7 +14,33 @@
     "export_yaml": "Export YAML",
     "copy_yaml": "Copy YAML",
     "copied": "Copied to Clipboard",
-    "custom_lang": "Assets"
+    "custom_lang": "Assets",
+    "add_language": "Add Custom Language Pack"
+  },
+  "search_modal": {
+    "title": "Select Item Material (Material Picker)",
+    "custom_placeholder": "Custom Material ID (e.g. HDB-1234, HEAD-Steve)",
+    "use_custom": "Use Custom Input",
+    "no_results": "No matching material found. Click above to use custom input!",
+    "tag_redstone_torch": "Redstone Torch",
+    "tag_diamond_sword": "Diamond Sword",
+    "tag_clock": "Clock",
+    "tag_chest": "Chest",
+    "tag_oak_sign": "Oak Sign"
+  },
+  "menu_settings": {
+    "title": "Global Menu Settings",
+    "menu_title": "Menu Display Title (menu_title):",
+    "menu_title_hint": "Supports Minecraft & color codes and %player_name% placeholder",
+    "open_command": "Open Command (open_command):",
+    "size": "GUI Total Slots (size):",
+    "inventory_type": "Container Type (inventory_type):",
+    "update_interval": "Auto Update Interval Seconds (update_interval):"
+  },
+  "code_editor": {
+    "title": "YAML Source Code Live Edit & Sync",
+    "sync_error": "YAML Syntax Parse Error:",
+    "sync_success": "Bi-directional GUI & YAML Sync Active"
   },
   "gui_grid": {
     "title": "GUI Preview",

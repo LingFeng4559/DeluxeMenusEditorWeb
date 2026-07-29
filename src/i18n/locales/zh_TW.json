@@ -14,7 +14,39 @@
     "export_yaml": "匯出 YAML",
     "copy_yaml": "複製 YAML",
     "copied": "已複製到剪貼簿",
-    "custom_lang": "語系資產"
+    "custom_lang": "語系資產",
+    "add_language": "新增自訂語言包"
+  },
+  "search_modal": {
+    "title": "選擇物品材質 (Material Picker)",
+    "custom_placeholder": "自訂輸入材質 ID (例如: HDB-1234, HEAD-Steve)",
+    "use_custom": "選用自訂輸入",
+    "no_results": "找不到匹配的材質，可點擊上方使用自訂輸入！",
+    "tag_redstone_torch": "紅石火把",
+    "tag_diamond_sword": "鑽石劍",
+    "tag_clock": "時鐘",
+    "tag_chest": "箱子",
+    "tag_oak_sign": "告示牌"
+  },
+  "menu_settings": {
+    "title": "全域選單設定 (Menu Settings)",
+    "menu_title": "選單顯示標題 (menu_title):",
+    "menu_title_hint": "支援 Minecraft & 彩色符號與 %player_name% 變數",
+    "open_command": "開啟命令 (open_command):",
+    "size": "GUI 槽位總數 (size):",
+    "inventory_type": "容器類型 (inventory_type):",
+    "update_interval": "自動更新頻率秒數 (update_interval):"
+  },
+  "code_editor": {
+    "title": "YAML 原始碼即時編輯與同步",
+    "sync_error": "YAML 格式解析錯誤：",
+    "sync_success": "YAML 與 GUI 雙向無縫同步中"
+  },
+  "top_bar": {
+    "open_command": "目前開放指令:",
+    "modified": "已修改 (未匯出)",
+    "unmodified": "未修改 (可直接拖放檔案)",
+    "global_settings": "全域選單設定"
   },
   "gui_grid": {
     "title": "GUI 介面預覽",
