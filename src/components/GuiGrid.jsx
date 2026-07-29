@@ -399,9 +399,9 @@ export default function GuiGrid({
               </span>
             </div>
 
-            {/* Authentic Minecraft Slot Grid with Dynamic Inventory Type Layout */}
-            <div className={`grid ${currentLayout.gridClass} gap-1 bg-[#8b8b8b] p-1 border-2 border-t-[#373737] border-l-[#373737] border-r-[#ffffff] border-b-[#ffffff]`}>
-              {slotArray.map((slotIndex) => {
+            {/* Helper to Render a Single Slot Button */}
+            {(() => {
+              const renderSlotBtn = (slotIndex, extraClass = '') => {
                 const allSlotItems = getItemsAtSlot(slotIndex);
                 const activeVariantIdx = activePriorityMap[slotIndex] || 0;
                 const currentActiveItem = allSlotItems[activeVariantIdx] || allSlotItems[0] || null;
@@ -427,7 +427,7 @@ export default function GuiGrid({
                         : isSelected
                         ? 'ring-2 ring-emerald-500 bg-[#a8a8a8] z-10'
                         : ''
-                    }`}
+                    } ${extraClass}`}
                   >
                     <span className="absolute top-0.5 left-1 text-[9px] font-mono text-[#555555] opacity-70 pointer-events-none">
                       {slotIndex}
@@ -459,8 +459,93 @@ export default function GuiGrid({
                     )}
                   </button>
                 );
-              })}
-            </div>
+              };
+
+              const invType = (menu.inventory_type || 'CHEST').toUpperCase();
+
+              // 🔨 100% Authentic Minecraft ANVIL (鐵砧) Layout
+              if (invType === 'ANVIL') {
+                return (
+                  <div className="flex flex-col items-center gap-3 p-2 bg-[#c6c6c6]">
+                    {/* Anvil Repair & Name Bar */}
+                    <div className="w-full bg-[#8b8b8b] border-2 border-t-[#373737] border-l-[#373737] border-r-[#ffffff] border-b-[#ffffff] px-3 py-1 text-[11px] font-mono text-[#373737] flex items-center justify-between shadow-inner">
+                      <span>🔨 修理與命名 (Repair & Name)</span>
+                      <span className="text-[10px] text-[#555555]">Anvil GUI</span>
+                    </div>
+
+                    {/* Slot 0 + Slot 1 + Hammer Arrow + Slot 2 (Output) */}
+                    <div className="flex items-center gap-3 bg-[#8b8b8b] p-3 border-2 border-t-[#373737] border-l-[#373737] border-r-[#ffffff] border-b-[#ffffff]">
+                      {renderSlotBtn(0)}
+                      <span className="text-lg font-bold text-[#373737]">+</span>
+                      {renderSlotBtn(1)}
+
+                      {/* Anvil Hammer & Arrow Icon */}
+                      <div className="flex flex-col items-center justify-center px-2 text-[#404040]">
+                        <span className="text-xl leading-none">🔨 ➔</span>
+                        <span className="text-[9px] font-bold text-[#555555] mt-0.5">Combine</span>
+                      </div>
+
+                      {renderSlotBtn(2, 'scale-110 ring-1 ring-amber-500/50')}
+                    </div>
+                  </div>
+                );
+              }
+
+              // ⚒️ 100% Authentic Minecraft WORKBENCH (工作台) Layout
+              if (invType === 'WORKBENCH' || invType === 'CRAFTING') {
+                return (
+                  <div className="flex items-center gap-4 bg-[#8b8b8b] p-3 border-2 border-t-[#373737] border-l-[#373737] border-r-[#ffffff] border-b-[#ffffff]">
+                    {/* 3x3 Crafting Grid (Slots 0 ~ 8) */}
+                    <div className="grid grid-cols-3 gap-1">
+                      {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(sIdx => renderSlotBtn(sIdx))}
+                    </div>
+
+                    {/* Crafting Result Big Arrow */}
+                    <div className="flex flex-col items-center text-[#404040]">
+                      <span className="text-2xl font-black">➔</span>
+                      <span className="text-[9px] font-bold text-[#555555]">Craft</span>
+                    </div>
+
+                    {/* Result Slot (Slot 9 if present, or Slot 0 preview) */}
+                    <div>
+                      {renderSlotBtn(9, 'scale-125 ring-2 ring-emerald-500/50')}
+                    </div>
+                  </div>
+                );
+              }
+
+              // 🔥 100% Authentic Minecraft FURNACE (熔爐) Layout
+              if (invType === 'FURNACE' || invType === 'BLAST_FURNACE' || invType === 'SMOKER') {
+                return (
+                  <div className="flex items-center gap-4 bg-[#8b8b8b] p-3 border-2 border-t-[#373737] border-l-[#373737] border-r-[#ffffff] border-b-[#ffffff]">
+                    {/* Left Column: Top Ingredient (Slot 0) & Bottom Fuel (Slot 1) */}
+                    <div className="flex flex-col items-center gap-2">
+                      {renderSlotBtn(0)}
+                      <span className="text-xs">🔥</span>
+                      {renderSlotBtn(1)}
+                    </div>
+
+                    {/* Smelting Progress Arrow */}
+                    <div className="flex flex-col items-center text-[#404040]">
+                      <span className="text-2xl font-black">➔</span>
+                      <span className="text-[9px] font-bold text-[#555555]">Smelt</span>
+                    </div>
+
+                    {/* Right Output Slot (Slot 2) */}
+                    <div>
+                      {renderSlotBtn(2, 'scale-125 ring-2 ring-amber-500/50')}
+                    </div>
+                  </div>
+                );
+              }
+
+              // Default Chest Grid Layout
+              return (
+                <div className={`grid ${currentLayout.gridClass} gap-1 bg-[#8b8b8b] p-1 border-2 border-t-[#373737] border-l-[#373737] border-r-[#ffffff] border-b-[#ffffff]`}>
+                  {slotArray.map((slotIndex) => renderSlotBtn(slotIndex))}
+                </div>
+              );
+            })()}
           </div>
         ) : (
           /* MODERN DARK GLASS GUI THEME WITH DYNAMIC INVENTORY LAYOUT */
