@@ -119,6 +119,7 @@ export function parseYamlToMenu(yamlText) {
     const menu = {
       menu_title: menuData.menu_title || '&eMenu',
       open_command: menuData.open_command || menuData.command || '',
+      register_command: menuData.register_command !== undefined ? menuData.register_command : true,
       size: Number(menuData.size) || 54,
       inventory_type: menuData.inventory_type || 'CHEST',
       update_interval: menuData.update_interval || 1,
@@ -138,14 +139,25 @@ export function parseYamlToMenu(yamlText) {
 export function dumpMenuToYaml(menu) {
   if (!menu) return '';
 
+  // Clean items object and filter out internal UI state tags like _req_type
+  const cleanItems = {};
+  if (menu.items && typeof menu.items === 'object') {
+    for (const [k, itemVal] of Object.entries(menu.items)) {
+      if (!itemVal) continue;
+      const { _req_type, ...restItem } = itemVal;
+      cleanItems[k] = restItem;
+    }
+  }
+
   const cleanData = {
     menu_title: menu.menu_title,
     ...(menu.open_command ? { open_command: menu.open_command } : {}),
+    ...(menu.register_command === false ? { register_command: false } : {}),
     size: Number(menu.size) || 54,
     ...(menu.inventory_type && menu.inventory_type !== 'CHEST' ? { inventory_type: menu.inventory_type } : {}),
     ...(menu.update_interval ? { update_interval: menu.update_interval } : {}),
     ...(menu.open_requirement ? { open_requirement: menu.open_requirement } : {}),
-    items: menu.items || {}
+    items: cleanItems
   };
 
   try {

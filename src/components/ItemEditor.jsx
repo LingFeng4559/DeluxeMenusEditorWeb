@@ -563,19 +563,37 @@ export default function ItemEditor({
               </select>
             </div>
 
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              {['[player]', '[console]', '[message]', '[sound]', '[close]', '[openguimenu]'].map((prefix) => (
-                <button
-                  key={prefix}
-                  onClick={() => handleAddCommand(`${prefix} `)}
-                  className="px-2 py-0.5 text-[11px] font-mono bg-slate-800 hover:bg-slate-700 text-teal-300 border border-slate-700 rounded transition"
-                >
-                  +{prefix}
-                </button>
-              ))}
+            {/* DeluxeMenus 15+ Rich Click Command Prefix Buttons */}
+            <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800 space-y-2">
+              <span className="text-[11px] text-teal-400 font-bold block">點擊一鍵插入 DeluxeMenus 官方動作前綴:</span>
+              <div className="flex flex-wrap gap-1">
+                {[
+                  { prefix: '[player]', desc: '玩家執行' },
+                  { prefix: '[console]', desc: '控制台執行' },
+                  { prefix: '[message]', desc: '發送訊息' },
+                  { prefix: '[broadcast]', desc: '全服廣播' },
+                  { prefix: '[sound]', desc: '播放音效' },
+                  { prefix: '[takemoney]', desc: '扣除金錢' },
+                  { prefix: '[takeexp]', desc: '扣除經驗' },
+                  { prefix: '[connect]', desc: '跨服切換' },
+                  { prefix: '[refresh]', desc: '刷新 GUI' },
+                  { prefix: '[openguimenu]', desc: '打開菜單' },
+                  { prefix: '[close]', desc: '關閉 GUI' },
+                  { prefix: '[meta]', desc: '設定 Metadata' }
+                ].map(({ prefix, desc }) => (
+                  <button
+                    key={prefix}
+                    onClick={() => handleAddCommand(`${prefix} `)}
+                    title={desc}
+                    className="px-2 py-0.5 text-[10px] font-mono bg-slate-900 hover:bg-slate-800 text-teal-300 border border-slate-800 hover:border-teal-500/50 rounded transition"
+                  >
+                    +{prefix}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div className="space-y-2 pt-2">
+            <div className="space-y-2 pt-1">
               {commandsList.map((cmd, idx) => (
                 <div key={idx} className="flex gap-2 items-center">
                   <input
@@ -596,60 +614,128 @@ export default function ItemEditor({
           </div>
         )}
 
-        {/* TAB 4: VIEW REQUIREMENTS WITH PUZZLE BLOCK BUILDER */}
+        {/* TAB 4: VIEW & CLICK REQUIREMENTS WITH PUZZLE BLOCK BUILDER */}
         {activeTab === 'requirements' && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <label className="text-xs text-amber-300 font-bold flex items-center gap-1.5">
-                <ShieldAlert className="w-4 h-4" /> 拼圖式顯示條件建立器 (view_requirement)
-              </label>
+            {/* View / Click Requirement Sub-tab Switcher */}
+            <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+              <button
+                onClick={() => handleChange('_req_type', 'view_requirement')}
+                className={`flex-1 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 ${
+                  (item?._req_type || 'view_requirement') === 'view_requirement'
+                    ? 'bg-amber-500 text-slate-950 shadow'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <ShieldAlert className="w-3.5 h-3.5" />
+                <span>顯示條件 (view_requirement)</span>
+              </button>
+
+              <button
+                onClick={() => handleChange('_req_type', 'click_requirement')}
+                className={`flex-1 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 ${
+                  item?._req_type === 'click_requirement'
+                    ? 'bg-cyan-500 text-slate-950 shadow'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Terminal className="w-3.5 h-3.5" />
+                <span>點擊條件 (click_requirement)</span>
+              </button>
             </div>
 
             {/* Puzzle Requirement Builder Component */}
             <RequirementPuzzleBuilder
-              value={item?.view_requirement}
-              onChange={(nextReqVal) => handleChange('view_requirement', nextReqVal)}
+              value={item?._req_type === 'click_requirement' ? item?.click_requirement : item?.view_requirement}
+              onChange={(nextReqVal) => {
+                const targetKey = item?._req_type === 'click_requirement' ? 'click_requirement' : 'view_requirement';
+                handleChange(targetKey, nextReqVal);
+              }}
             />
 
             {/* Clear Requirement Button */}
-            {item?.view_requirement && (
+            {(item?.view_requirement || item?.click_requirement) && (
               <div className="pt-2 border-t border-slate-800 flex justify-end">
                 <button
-                  onClick={() => handleChange('view_requirement', undefined)}
+                  onClick={() => {
+                    const targetKey = item?._req_type === 'click_requirement' ? 'click_requirement' : 'view_requirement';
+                    handleChange(targetKey, undefined);
+                  }}
                   className="px-3 py-1.5 text-xs text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-lg hover:bg-rose-500/20 transition flex items-center gap-1 font-bold"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
-                  <span>清除全部顯示條件</span>
+                  <span>清除當前條件</span>
                 </button>
               </div>
             )}
           </div>
         )}
 
-        {/* TAB 5: FLAGS & ATTRIBUTES */}
+        {/* TAB 5: FLAGS & ADVANCED ATTRIBUTES */}
         {activeTab === 'flags' && (
-          <div className="space-y-2">
-            {[
-              { key: 'hide_attributes', label: t('item_editor.hide_attributes') },
-              { key: 'hide_enchantments', label: t('item_editor.hide_enchantments') },
-              { key: 'hide_effects', label: t('item_editor.hide_effects') },
-              { key: 'hide_unbreakable', label: t('item_editor.hide_unbreakable') },
-              { key: 'unbreakable', label: t('item_editor.unbreakable') },
-              { key: 'glow', label: t('item_editor.glow') }
-            ].map(({ key, label }) => (
-              <label
-                key={key}
-                className="flex items-center justify-between p-2.5 bg-slate-950/60 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-700 transition"
-              >
-                <span className="text-xs text-slate-300">{label}</span>
+          <div className="space-y-4">
+            {/* Custom Model Data & Color (RGB) */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-slate-400 block mb-1 font-medium">CustomModelData</label>
                 <input
-                  type="checkbox"
-                  checked={!!item?.[key]}
-                  onChange={(e) => handleChange(key, e.target.checked)}
-                  className="w-4 h-4 accent-emerald-500 rounded cursor-pointer"
+                  type="number"
+                  value={item?.custom_model_data || ''}
+                  placeholder="例如: 10001"
+                  onChange={(e) => handleChange('custom_model_data', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                  className="w-full px-3 py-2 text-xs font-mono bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:border-emerald-500 focus:outline-none"
                 />
-              </label>
-            ))}
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-400 block mb-1 font-medium">皮革 RGB 染色 (color)</label>
+                <input
+                  type="text"
+                  value={item?.color || ''}
+                  placeholder="例如: 255, 0, 0"
+                  onChange={(e) => handleChange('color', e.target.value || undefined)}
+                  className="w-full px-3 py-2 text-xs font-mono bg-slate-950 border border-slate-800 rounded-xl text-cyan-400 focus:border-cyan-500 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Custom NBT String */}
+            <div>
+              <label className="text-xs text-slate-400 block mb-1 font-medium">NBT 數據標籤 (nbt_string)</label>
+              <input
+                type="text"
+                value={item?.nbt_string || ''}
+                placeholder="例如: CustomItemType:sword_lvl_1"
+                onChange={(e) => handleChange('nbt_string', e.target.value || undefined)}
+                className="w-full px-3 py-2 text-xs font-mono bg-slate-950 border border-slate-800 rounded-xl text-amber-400 focus:border-amber-500 focus:outline-none"
+              />
+            </div>
+
+            {/* Hide Flags Checklist */}
+            <div className="space-y-2 pt-1 border-t border-slate-800">
+              <span className="text-xs text-slate-400 font-bold block">隱藏物品細節標籤 (Hide Flags):</span>
+              {[
+                { key: 'hide_attributes', label: t('item_editor.hide_attributes') },
+                { key: 'hide_enchantments', label: t('item_editor.hide_enchantments') },
+                { key: 'hide_effects', label: t('item_editor.hide_effects') },
+                { key: 'hide_unbreakable', label: t('item_editor.hide_unbreakable') },
+                { key: 'unbreakable', label: t('item_editor.unbreakable') },
+                { key: 'glow', label: t('item_editor.glow') }
+              ].map(({ key, label }) => (
+                <label
+                  key={key}
+                  className="flex items-center justify-between p-2.5 bg-slate-950/60 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-700 transition"
+                >
+                  <span className="text-xs text-slate-300">{label}</span>
+                  <input
+                    type="checkbox"
+                    checked={!!item?.[key]}
+                    onChange={(e) => handleChange(key, e.target.checked)}
+                    className="w-4 h-4 accent-emerald-500 rounded cursor-pointer"
+                  />
+                </label>
+              ))}
+            </div>
           </div>
         )}
       </div>
