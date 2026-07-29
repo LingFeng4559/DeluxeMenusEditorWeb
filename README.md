@@ -1,4 +1,4 @@
-# 🎮 DeluxeMenus GUI Visual Editor (`deluxe-gui-editor`)
+# 🎮 DeluxeMenusEditorWeb
 
 > 專為 Minecraft 伺服器管理員與選單設計師打造的 **1:1 原生 3D DeluxeMenus GUI 雙向視覺化編輯器**！
 
