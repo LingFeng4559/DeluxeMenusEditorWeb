@@ -9,6 +9,15 @@ const builtinLocales = {
   en: { name: 'English', data: en }
 };
 
+// Helper to normalize language codes (e.g., 'zh_tw', 'zh-tw' => 'zh_TW')
+const normalizeCode = (code) => {
+  if (!code) return 'zh_TW';
+  const c = String(code).replace('-', '_');
+  if (c.toLowerCase() === 'zh_tw') return 'zh_TW';
+  if (c.toLowerCase() === 'en' || c.toLowerCase() === 'en_us') return 'en';
+  return c;
+};
+
 export const I18nProvider = ({ children }) => {
   const [currentLang, setCurrentLang] = useState(() => {
     return localStorage.getItem('dme_lang') || 'zh_TW';
@@ -31,33 +40,72 @@ export const I18nProvider = ({ children }) => {
     localStorage.setItem('dme_custom_locales', JSON.stringify(customLocales));
   }, [customLocales]);
 
+  // addCustomLocale with Code Normalization to prevent duplicate 'zh_TW' / 'zh_tw'
   const addCustomLocale = useCallback((code, name, jsonObject) => {
-    setCustomLocales(prev => ({
-      ...prev,
-      [code]: { name, data: jsonObject }
-    }));
-    setCurrentLang(code);
+    const normCode = normalizeCode(code);
+
+    // If it's a builtin code, merge item_names into builtin data instead of creating a duplicate key
+    if (builtinLocales[normCode]) {
+      setCustomLocales(prev => ({
+        ...prev,
+        [normCode]: {
+          name: builtinLocales[normCode].name,
+          data: {
+            ...builtinLocales[normCode].data,
+            ...jsonObject,
+            item_names: {
+              ...(builtinLocales[normCode].data.item_names || {}),
+              ...(jsonObject.item_names || {})
+            }
+          }
+        }
+      }));
+    } else {
+      setCustomLocales(prev => ({
+        ...prev,
+        [normCode]: { name, data: jsonObject }
+      }));
+    }
   }, []);
 
   const removeCustomLocale = useCallback((code) => {
+    const normCode = normalizeCode(code);
     setCustomLocales(prev => {
       const next = { ...prev };
-      delete next[code];
+      delete next[normCode];
       return next;
     });
-    if (currentLang === code) {
+    if (currentLang === normCode) {
       setCurrentLang('zh_TW');
     }
   }, [currentLang]);
 
-  const availableLocales = useMemo(() => ({
-    ...builtinLocales,
-    ...customLocales
-  }), [customLocales]);
+  const availableLocales = useMemo(() => {
+    const merged = { ...builtinLocales };
+    for (const [k, v] of Object.entries(customLocales)) {
+      const normK = normalizeCode(k);
+      if (builtinLocales[normK]) {
+        merged[normK] = {
+          name: builtinLocales[normK].name,
+          data: {
+            ...builtinLocales[normK].data,
+            ...(v.data || {}),
+            item_names: {
+              ...(builtinLocales[normK].data.item_names || {}),
+              ...(v.data?.item_names || {})
+            }
+          }
+        };
+      } else {
+        merged[normK] = v;
+      }
+    }
+    return merged;
+  }, [customLocales]);
 
-  // useCallback: 確保切換語言時 t 的 reference 一定更新，帶動所有 UI 重新翻譯
   const t = useCallback((keyPath, params = {}) => {
-    const activeData = availableLocales[currentLang]?.data || builtinLocales.zh_TW.data;
+    const normLang = normalizeCode(currentLang);
+    const activeData = availableLocales[normLang]?.data || builtinLocales.zh_TW.data;
     const keys = keyPath.split('.');
     let val = activeData;
     
@@ -86,7 +134,7 @@ export const I18nProvider = ({ children }) => {
   }, [currentLang, availableLocales]);
 
   const contextValue = useMemo(() => ({
-    currentLang,
+    currentLang: normalizeCode(currentLang),
     setCurrentLang,
     availableLocales,
     addCustomLocale,

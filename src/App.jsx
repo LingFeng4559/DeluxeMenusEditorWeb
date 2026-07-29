@@ -62,14 +62,14 @@ function AppContent() {
     const silentAutoSync = async () => {
       try {
         const LOCALES = [
-          { code: 'zh_tw', name: '繁體中文' },
-          { code: 'zh_cn', name: '簡體中文' },
-          { code: 'ja_jp', name: '日本語' },
-          { code: 'en_us', name: 'English' }
+          { code: 'zh_TW', langFile: 'zh_tw', name: '繁體中文' },
+          { code: 'zh_CN', langFile: 'zh_cn', name: '簡體中文' },
+          { code: 'ja_JP', langFile: 'ja_jp', name: '日本語' },
+          { code: 'en', langFile: 'en_us', name: 'English' }
         ];
 
-        for (const { code, name } of LOCALES) {
-          const url = `https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.20.4/assets/minecraft/lang/${code}.json`;
+        for (const { code, langFile, name } of LOCALES) {
+          const url = `https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.20.4/assets/minecraft/lang/${langFile}.json`;
           const res = await fetch(url);
           if (res.ok) {
             const txt = await res.text();
