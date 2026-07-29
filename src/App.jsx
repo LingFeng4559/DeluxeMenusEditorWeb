@@ -7,7 +7,6 @@ import MenuSettings from './components/MenuSettings';
 import YamlCodeEditor from './components/YamlCodeEditor';
 import TreeHierarchyExplorer from './components/TreeHierarchyExplorer';
 import CommandPalette from './components/CommandPalette';
-import MockPlayerProfile from './components/MockPlayerProfile';
 import SnippetLibrary from './components/SnippetLibrary';
 import { parseYamlToMenu, dumpMenuToYaml, DEFAULT_MENU } from './utils/yamlParser';
 import { clearTextureCache } from './utils/textureCache';
@@ -186,13 +185,6 @@ function AppContent() {
       }
     }, 300);
   };
-
-  // Mock Player Profile State
-  const [mockProfile, setMockProfile] = useState({
-    name: 'Steve',
-    balance: 12500,
-    group: 'VIP'
-  });
 
   // Command Palette State
   const [showCommandPalette, setShowCommandPalette] = useState(false);
@@ -647,26 +639,20 @@ function AppContent() {
           </button>
         </div>
 
-        {/* Mock Player Profile & Snippet Library Dashboard */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <MockPlayerProfile
-            mockProfile={mockProfile}
-            onUpdateProfile={setMockProfile}
-          />
-          <SnippetLibrary
-            onInsertSnippet={(snippet) => {
-              if (snippet.category === 'Commands' && selectedSlot !== null) {
-                const currentItem = getSelectedItem();
-                if (currentItem) {
-                  handleUpdateItem(currentItem.key, {
-                    ...currentItem,
-                    left_click_commands: [...(currentItem.left_click_commands || []), ...snippet.content]
-                  });
-                }
+        {/* Snippet Library Dashboard */}
+        <SnippetLibrary
+          onInsertSnippet={(snippet) => {
+            if (snippet.category === 'Commands' && selectedSlot !== null) {
+              const currentItem = getSelectedItem();
+              if (currentItem) {
+                handleUpdateItem(currentItem.key, {
+                  ...currentItem,
+                  left_click_commands: [...(currentItem.left_click_commands || []), ...snippet.content]
+                });
               }
-            }}
-          />
-        </div>
+            }
+          }}
+        />
 
         {/* IDE Tree Hierarchy Explorer Panel */}
         <TreeHierarchyExplorer
