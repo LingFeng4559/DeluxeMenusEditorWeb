@@ -1,35 +1,43 @@
 import React, { useState } from 'react';
+import { useI18n } from '../i18n';
 import {
   Zap, Plus, Trash2, ArrowUp, ArrowDown, Terminal, DollarSign, Award, Volume2, MessageSquare, Globe, ArrowRightLeft, RefreshCw, Layers, LogOut, Check
 } from 'lucide-react';
 import { getSoundChineseName } from '../utils/minecraftSounds';
 import SoundSearchModal from './SoundSearchModal';
 
-const ACTION_TYPES = [
-  { prefix: '[player]', label: '玩家指令', desc: '玩家角度執行命令', icon: Terminal, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' },
-  { prefix: '[console]', label: '控制台指令', desc: 'OP 最高權限執行', icon: Zap, color: 'text-amber-400 bg-amber-500/10 border-amber-500/30' },
-  { prefix: '[message]', label: '發送訊息', desc: '傳送個人提示訊息', icon: MessageSquare, color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30' },
-  { prefix: '[broadcast]', label: '全服廣播', desc: '全伺服器播報廣播', icon: Globe, color: 'text-purple-400 bg-purple-500/10 border-purple-500/30' },
-  { prefix: '[sound]', label: '播放音效', desc: '播放 Minecraft 音效', icon: Volume2, color: 'text-pink-400 bg-pink-500/10 border-pink-500/30' },
-  { prefix: '[takemoney]', label: '扣除金錢', desc: '扣除玩家 Vault 金錢', icon: DollarSign, color: 'text-green-400 bg-green-500/10 border-green-500/30' },
-  { prefix: '[takeexp]', label: '扣除經驗', desc: '扣除玩家經驗等級', icon: Award, color: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30' },
-  { prefix: '[connect]', label: '跨服傳送', desc: '切換 Bungee/Velocity 伺服器', icon: ArrowRightLeft, color: 'text-blue-400 bg-blue-500/10 border-blue-500/30' },
-  { prefix: '[refresh]', label: '刷新選單', desc: '立即更新 GUI 物品與變數', icon: RefreshCw, color: 'text-teal-400 bg-teal-500/10 border-teal-500/30' },
-  { prefix: '[close]', label: '關閉選單', desc: '關閉當前 GUI', icon: LogOut, color: 'text-rose-400 bg-rose-500/10 border-rose-500/30' }
+const RAW_ACTION_TYPES = [
+  { prefix: '[player]', key: 'player', icon: Terminal, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' },
+  { prefix: '[console]', key: 'console', icon: Zap, color: 'text-amber-400 bg-amber-500/10 border-amber-500/30' },
+  { prefix: '[message]', key: 'message', icon: MessageSquare, color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30' },
+  { prefix: '[broadcast]', key: 'broadcast', icon: Globe, color: 'text-purple-400 bg-purple-500/10 border-purple-500/30' },
+  { prefix: '[sound]', key: 'sound', icon: Volume2, color: 'text-pink-400 bg-pink-500/10 border-pink-500/30' },
+  { prefix: '[takemoney]', key: 'takemoney', icon: DollarSign, color: 'text-green-400 bg-green-500/10 border-green-500/30' },
+  { prefix: '[takeexp]', key: 'takeexp', icon: Award, color: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30' },
+  { prefix: '[connect]', key: 'connect', icon: ArrowRightLeft, color: 'text-blue-400 bg-blue-500/10 border-blue-500/30' },
+  { prefix: '[refresh]', key: 'refresh', icon: RefreshCw, color: 'text-teal-400 bg-teal-500/10 border-teal-500/30' },
+  { prefix: '[close]', key: 'close', icon: LogOut, color: 'text-rose-400 bg-rose-500/10 border-rose-500/30' }
 ];
 
 export default function ActionFlowBuilder({ commands = [], onChange }) {
+  const { t } = useI18n();
   const [soundTargetIdx, setSoundTargetIdx] = useState(null);
+
   const getActionMeta = (cmdStr) => {
-    const matched = ACTION_TYPES.find((a) => cmdStr.trim().startsWith(a.prefix));
+    const matched = RAW_ACTION_TYPES.find((a) => cmdStr.trim().startsWith(a.prefix));
     if (matched) {
       const content = cmdStr.trim().slice(matched.prefix.length).trim();
-      return { ...matched, content };
+      return {
+        ...matched,
+        label: t(`action_flow.${matched.key}`),
+        desc: t(`action_flow.${matched.key}_desc`),
+        content
+      };
     }
     return {
       prefix: '',
-      label: '一般指令',
-      desc: '未指定前綴',
+      label: 'Command',
+      desc: 'Custom',
       icon: Terminal,
       color: 'text-slate-300 bg-slate-800 border-slate-700',
       content: cmdStr
@@ -38,7 +46,7 @@ export default function ActionFlowBuilder({ commands = [], onChange }) {
 
   const handleAddAction = (prefix) => {
     const defaultContent = prefix === '[takemoney]' ? '100'
-                         : prefix === '[message]' ? '&a成功觸發！'
+                         : prefix === '[message]' ? '&aSuccess!'
                          : prefix === '[sound]' ? 'ENTITY_PLAYER_LEVELUP'
                          : prefix === '[close]' ? ''
                          : 'spawn';
@@ -74,11 +82,11 @@ export default function ActionFlowBuilder({ commands = [], onChange }) {
       {/* Quick Add Action Palette */}
       <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800 space-y-2">
         <span className="text-[11px] text-teal-400 font-bold flex items-center gap-1">
-          <Plus className="w-3.5 h-3.5" /> 點擊按鈕向動作鏈中插入步驟 (Action Step):
+          <Plus className="w-3.5 h-3.5" /> {t('action_flow.add_step_hint')}
         </span>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-          {ACTION_TYPES.map((action) => {
+          {RAW_ACTION_TYPES.map((action) => {
             const Icon = action.icon;
             return (
               <button
@@ -88,7 +96,7 @@ export default function ActionFlowBuilder({ commands = [], onChange }) {
                 className={`p-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 shadow-sm hover:scale-[1.02] active:scale-95 ${action.color}`}
               >
                 <Icon className="w-3.5 h-3.5" />
-                <span>{action.label}</span>
+                <span>{t(`action_flow.${action.key}`)}</span>
               </button>
             );
           })}
@@ -111,7 +119,7 @@ export default function ActionFlowBuilder({ commands = [], onChange }) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-mono font-bold bg-slate-950 px-2 py-0.5 rounded-md text-slate-400 border border-slate-800">
-                      Step #{idx + 1}
+                      {t('action_flow.step_prefix')}{idx + 1}
                     </span>
                     <span className={`text-xs font-bold flex items-center gap-1.5 px-2 py-0.5 rounded-md border ${meta.color}`}>
                       <Icon className="w-3.5 h-3.5" />
@@ -128,7 +136,6 @@ export default function ActionFlowBuilder({ commands = [], onChange }) {
                       className={`p-1 rounded transition ${
                         idx === 0 ? 'text-slate-700 cursor-not-allowed' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
                       }`}
-                      title="上移此步驟"
                     >
                       <ArrowUp className="w-3.5 h-3.5" />
                     </button>
@@ -140,7 +147,6 @@ export default function ActionFlowBuilder({ commands = [], onChange }) {
                       className={`p-1 rounded transition ${
                         idx === commands.length - 1 ? 'text-slate-700 cursor-not-allowed' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
                       }`}
-                      title="下移此步驟"
                     >
                       <ArrowDown className="w-3.5 h-3.5" />
                     </button>
@@ -149,7 +155,6 @@ export default function ActionFlowBuilder({ commands = [], onChange }) {
                       type="button"
                       onClick={() => handleRemoveAction(idx)}
                       className="p-1 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded transition ml-1"
-                      title="刪除此步驟"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -164,7 +169,7 @@ export default function ActionFlowBuilder({ commands = [], onChange }) {
                         type="text"
                         value={meta.content}
                         onChange={(e) => handleUpdateActionContent(idx, e.target.value, meta.prefix)}
-                        placeholder={`輸入 ${meta.label} 內容...`}
+                        placeholder={t('action_flow.input_placeholder', { label: meta.label })}
                         className="flex-1 px-3 py-1.5 text-xs font-mono bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 focus:border-emerald-500 focus:outline-none"
                       />
 
@@ -175,7 +180,7 @@ export default function ActionFlowBuilder({ commands = [], onChange }) {
                           className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-pink-300 border border-slate-700 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0"
                         >
                           <Volume2 className="w-3.5 h-3.5" />
-                          <span>音效庫</span>
+                          <span>{t('action_flow.sound_picker_btn')}</span>
                         </button>
                       )}
                     </div>
@@ -183,8 +188,8 @@ export default function ActionFlowBuilder({ commands = [], onChange }) {
                     {/* Chinese Sound Name Badge for [sound] */}
                     {meta.prefix === '[sound]' && meta.content && (
                       <div className="flex items-center gap-1.5 text-[11px] font-bold text-pink-400 bg-pink-500/10 px-2 py-0.5 rounded border border-pink-500/20 w-fit">
-                        <span>🎵 官方註解:</span>
-                        <span>{getSoundChineseName(meta.content) || '自訂特殊音效'}</span>
+                        <span>{t('action_flow.official_annotation')}</span>
+                        <span>{getSoundChineseName(meta.content) || t('action_flow.custom_sound')}</span>
                       </div>
                     )}
                   </div>
@@ -194,7 +199,7 @@ export default function ActionFlowBuilder({ commands = [], onChange }) {
           })
         ) : (
           <div className="text-center py-6 border-2 border-dashed border-slate-800 rounded-xl text-slate-500 text-xs">
-            點擊上方按鈕，為點擊動作鏈新增觸發步驟 ⚡
+            {t('action_flow.empty_hint')}
           </div>
         )}
       </div>

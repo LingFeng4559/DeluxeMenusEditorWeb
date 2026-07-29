@@ -1,7 +1,7 @@
 import * as yaml from 'js-yaml';
 
 export const DEFAULT_MENU = {
-  menu_title: '&6&l選單主介面',
+  menu_title: '&6&lMain Menu',
   open_command: 'menu',
   size: 54,
   inventory_type: 'CHEST',
@@ -10,10 +10,10 @@ export const DEFAULT_MENU = {
     'sample_item': {
       material: 'CLOCK',
       slot: 0,
-      display_name: '&a&l歡迎進入伺服器',
+      display_name: '&a&lWelcome to Server',
       lore: [
-        '&7這是一個 DeluxeMenus 範例物品',
-        '&e點擊執行指令！'
+        '&7DeluxeMenus Example Item',
+        '&eClick to execute command!'
       ],
       left_click_commands: [
         '[player] spawn',

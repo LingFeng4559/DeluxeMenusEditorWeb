@@ -635,22 +635,22 @@ export default function ItemEditor({
             {/* Custom Model Data & Color (RGB) */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-slate-400 block mb-1 font-medium">CustomModelData</label>
+                <label className="text-xs text-slate-400 block mb-1 font-medium">{t('item_editor.custom_model_data')}</label>
                 <input
                   type="number"
                   value={item?.custom_model_data || ''}
-                  placeholder="例如: 10001"
+                  placeholder={t('item_editor.cmd_placeholder')}
                   onChange={(e) => handleChange('custom_model_data', e.target.value === '' ? undefined : parseInt(e.target.value))}
                   className="w-full px-3 py-2 text-xs font-mono bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:border-emerald-500 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="text-xs text-slate-400 block mb-1 font-medium">皮革 RGB 染色 (color)</label>
+                <label className="text-xs text-slate-400 block mb-1 font-medium">{t('item_editor.leather_color')}</label>
                 <input
                   type="text"
                   value={item?.color || ''}
-                  placeholder="例如: 255, 0, 0"
+                  placeholder={t('item_editor.leather_color_placeholder')}
                   onChange={(e) => handleChange('color', e.target.value || undefined)}
                   className="w-full px-3 py-2 text-xs font-mono bg-slate-950 border border-slate-800 rounded-xl text-cyan-400 focus:border-cyan-500 focus:outline-none"
                 />
@@ -659,11 +659,11 @@ export default function ItemEditor({
 
             {/* Custom NBT String */}
             <div>
-              <label className="text-xs text-slate-400 block mb-1 font-medium">NBT 數據標籤 (nbt_string)</label>
+              <label className="text-xs text-slate-400 block mb-1 font-medium">{t('item_editor.nbt_string')}</label>
               <input
                 type="text"
                 value={item?.nbt_string || ''}
-                placeholder="例如: CustomItemType:sword_lvl_1"
+                placeholder={t('item_editor.nbt_placeholder')}
                 onChange={(e) => handleChange('nbt_string', e.target.value || undefined)}
                 className="w-full px-3 py-2 text-xs font-mono bg-slate-950 border border-slate-800 rounded-xl text-amber-400 focus:border-amber-500 focus:outline-none"
               />
@@ -671,7 +671,7 @@ export default function ItemEditor({
 
             {/* Hide Flags Checklist */}
             <div className="space-y-2 pt-1 border-t border-slate-800">
-              <span className="text-xs text-slate-400 font-bold block">隱藏物品細節標籤 (Hide Flags):</span>
+              <span className="text-xs text-slate-400 font-bold block">{t('item_editor.hide_flags_section')}</span>
               {[
                 { key: 'hide_attributes', label: t('item_editor.hide_attributes') },
                 { key: 'hide_enchantments', label: t('item_editor.hide_enchantments') },
