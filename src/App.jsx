@@ -7,7 +7,6 @@ import MenuSettings from './components/MenuSettings';
 import YamlCodeEditor from './components/YamlCodeEditor';
 import TreeHierarchyExplorer from './components/TreeHierarchyExplorer';
 import CommandPalette from './components/CommandPalette';
-import SnippetLibrary from './components/SnippetLibrary';
 import { parseYamlToMenu, dumpMenuToYaml, DEFAULT_MENU } from './utils/yamlParser';
 import { clearTextureCache } from './utils/textureCache';
 import { Settings, UploadCloud, AlertTriangle } from 'lucide-react';
@@ -639,20 +638,6 @@ function AppContent() {
           </button>
         </div>
 
-        {/* Snippet Library Dashboard */}
-        <SnippetLibrary
-          onInsertSnippet={(snippet) => {
-            if (snippet.category === 'Commands' && selectedSlot !== null) {
-              const currentItem = getSelectedItem();
-              if (currentItem) {
-                handleUpdateItem(currentItem.key, {
-                  ...currentItem,
-                  left_click_commands: [...(currentItem.left_click_commands || []), ...snippet.content]
-                });
-              }
-            }
-          }}
-        />
 
         {/* IDE Tree Hierarchy Explorer Panel */}
         <TreeHierarchyExplorer
