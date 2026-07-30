@@ -65,19 +65,79 @@ export function getSoundChineseName(soundId) {
 }
 
 /**
- * Synthesizes audio simulation using Web Audio API in browser.
+ * Official Minecraft 1:1 Real Audio CDN URL Map for Authentic In-Game Audio
+ */
+const AUTHENTIC_SOUND_URLS = {
+  'ENTITY_VILLAGER_NO': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/mob/villager/no1.ogg',
+  'ENTITY_VILLAGER_YES': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/mob/villager/yes1.ogg',
+  'ENTITY_VILLAGER_TRADE': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/mob/villager/haggle1.ogg',
+  'ENTITY_VILLAGER_CELEBRATE': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/mob/villager/celebrate.ogg',
+  'ENTITY_VILLAGER_HURT': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/mob/villager/hit1.ogg',
+  'ENTITY_VILLAGER_DEATH': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/mob/villager/death.ogg',
+  'ENTITY_COW_AMBIENT': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/mob/cow/say1.ogg',
+  'ENTITY_PIG_AMBIENT': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/mob/pig/say1.ogg',
+  'ENTITY_CHICKEN_AMBIENT': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/mob/chicken/say1.ogg',
+  'ENTITY_CAT_PURR': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/mob/cat/purr1.ogg',
+  'ENTITY_DOG_BARK': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/mob/wolf/bark1.ogg',
+  'ENTITY_WOLF_HOWL': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/mob/wolf/howl1.ogg',
+  'ENTITY_PLAYER_LEVELUP': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/random/levelup.ogg',
+  'ENTITY_EXPERIENCE_ORB_PICKUP': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/random/orb.ogg',
+  'ENTITY_PLAYER_BURP': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/random/burp.ogg',
+  'ENTITY_PLAYER_HURT': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/game/player/hurt1.ogg',
+  'UI_BUTTON_CLICK': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/gui/button/press.ogg',
+  'UI_TOAST_CHALLENGE_COMPLETE': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/ui/toast/challenge_complete.ogg',
+  'BLOCK_NOTE_BLOCK_BASS': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/note/bass.ogg',
+  'BLOCK_NOTE_BLOCK_PLING': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/note/pling.ogg',
+  'BLOCK_NOTE_BLOCK_HARP': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/note/harp.ogg',
+  'BLOCK_NOTE_BLOCK_BELL': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/note/bell.ogg',
+  'BLOCK_NOTE_BLOCK_CHIME': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/note/chime.ogg',
+  'BLOCK_NOTE_BLOCK_FLUTE': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/note/flute.ogg',
+  'BLOCK_NOTE_BLOCK_GUITAR': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/note/guitar.ogg',
+  'BLOCK_NOTE_BLOCK_XYLOPHONE': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/note/xylobone.ogg',
+  'BLOCK_ANVIL_USE': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/random/anvil_use.ogg',
+  'BLOCK_ANVIL_LAND': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/random/anvil_land.ogg',
+  'BLOCK_ANVIL_DESTROY': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/random/anvil_break.ogg',
+  'BLOCK_CHEST_OPEN': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/random/chestopen.ogg',
+  'BLOCK_CHEST_CLOSE': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/random/chestclosed.ogg',
+  'ENTITY_TNT_PRIMED': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/game/tnt/primed.ogg',
+  'ENTITY_GENERIC_EXPLODE': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/random/explode1.ogg',
+  'ITEM_TOTEM_USE': 'https://assets.mcasset.cloud/1.20.4/assets/minecraft/sounds/item/totem/use.ogg'
+};
+
+/**
+ * Plays 1:1 authentic Minecraft audio with Web Audio API fallback.
  */
 export function playSynthesizedSound(soundId) {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined' || !soundId) return;
 
+  const cleanId = String(soundId).trim().toUpperCase();
+  const realAudioUrl = AUTHENTIC_SOUND_URLS[cleanId];
+
+  // Primary: Try playing authentic 1:1 Minecraft .ogg sound file
+  if (realAudioUrl) {
+    const audio = new Audio(realAudioUrl);
+    audio.volume = 0.8;
+    audio.play().catch(() => {
+      // Fallback to Web Audio synthesis if network fails
+      playWebAudioSynthesisFallback(cleanId);
+    });
+    return;
+  }
+
+  // Secondary: Fallback to Web Audio synthesis
+  playWebAudioSynthesisFallback(cleanId);
+}
+
+/**
+ * Web Audio API synthesizer fallback engine
+ */
+function playWebAudioSynthesisFallback(cleanId) {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     if (!AudioContext) return;
 
     const ctx = new AudioContext();
-    const cleanId = String(soundId).trim().toUpperCase();
 
-    // 1. Level up sound (rising arp)
     if (cleanId.includes('LEVELUP')) {
       const freqs = [523.25, 659.25, 783.99, 1046.50];
       freqs.forEach((freq, idx) => {
@@ -95,7 +155,6 @@ export function playSynthesizedSound(soundId) {
       return;
     }
 
-    // 2. Villager No / Fail Bass sound (low frequency double thud)
     if (cleanId.includes('VILLAGER_NO') || cleanId.includes('BASS')) {
       [150, 110].forEach((freq, idx) => {
         const osc = ctx.createOscillator();
@@ -112,7 +171,6 @@ export function playSynthesizedSound(soundId) {
       return;
     }
 
-    // 3. UI Click / Pling sound (short high pitch ping)
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     const baseFreq = cleanId.includes('PLING') ? 880 : cleanId.includes('ANVIL') ? 350 : 600;
