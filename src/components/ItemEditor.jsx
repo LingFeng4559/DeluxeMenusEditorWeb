@@ -9,6 +9,7 @@ import {
 import RequirementPuzzleBuilder from './RequirementPuzzleBuilder';
 import PapiInput from './PapiInput';
 import ActionFlowBuilder from './ActionFlowBuilder';
+import { applyPlaceholderValues } from '../utils/placeholders';
 
 const MaterialSearchModal = lazy(() => import('./MaterialSearchModal'));
 
@@ -25,7 +26,8 @@ export default function ItemEditor({
   onUpdateItem,
   onDeleteItem,
   onDuplicateItem,
-  onApplyToSelectedSlots
+  onApplyToSelectedSlots,
+  placeholderValues = {}
 }) {
   const { t } = useI18n();
   const [activeTab, setActiveTab] = useState('basic');
@@ -265,7 +267,7 @@ export default function ItemEditor({
                         </span>
                       </div>
                       <div className="text-[11px] font-mono truncate mt-0.5">
-                        {parseMinecraftText(varItem.display_name || varItem.material || 'Unnamed').map((seg, sIdx) => (
+                        {parseMinecraftText(applyPlaceholderValues(varItem.display_name || varItem.material || 'Unnamed', placeholderValues)).map((seg, sIdx) => (
                           <span key={sIdx} style={seg.style}>{seg.text}</span>
                         ))}
                       </div>
@@ -434,7 +436,7 @@ export default function ItemEditor({
                 className="w-full px-3 py-2 text-xs font-mono bg-slate-950 border border-slate-800 rounded-lg text-slate-200 focus:border-emerald-500 focus:outline-none"
               />
               <div className="mt-1.5 p-2 bg-slate-950/80 rounded-lg border border-slate-800/80 font-mono text-xs">
-                {parseMinecraftText(item?.display_name || '&7Unnamed Item').map((seg, idx) => (
+                {parseMinecraftText(applyPlaceholderValues(item?.display_name || '&7Unnamed Item', placeholderValues)).map((seg, idx) => (
                   <span key={idx} style={seg.style}>{seg.text}</span>
                 ))}
               </div>
@@ -538,7 +540,7 @@ export default function ItemEditor({
                 <div className="p-3 bg-[#11011e]/95 border border-[#2b0859] rounded-xl font-mono text-xs space-y-1 shadow-inner">
                   {loreLines.map((line, idx) => (
                     <div key={idx} className="leading-snug min-h-[16px]">
-                      {parseMinecraftText(line || ' ').map((seg, sIdx) => (
+                      {parseMinecraftText(applyPlaceholderValues(line || ' ', placeholderValues)).map((seg, sIdx) => (
                         <span key={sIdx} style={seg.style}>{seg.text}</span>
                       ))}
                     </div>

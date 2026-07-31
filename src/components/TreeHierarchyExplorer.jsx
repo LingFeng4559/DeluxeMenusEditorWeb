@@ -13,7 +13,7 @@ export default function TreeHierarchyExplorer({
   activePriorityMap
 }) {
   const { t } = useI18n();
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [filterText, setFilterText] = useState('');
 
   if (!menu || !menu.items) return null;

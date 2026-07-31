@@ -4,8 +4,9 @@ import { useI18n } from '../i18n';
 import { parseMinecraftText } from '../utils/minecraftColors';
 import ItemIcon from './ItemIcon';
 import { Sparkles } from 'lucide-react';
+import { applyPlaceholderValues } from '../utils/placeholders';
 
-export default function LorePreview({ slotData, item, position }) {
+export default function LorePreview({ slotData, item, position, placeholderValues = {} }) {
   const { t } = useI18n();
   const scrollContainerRef = useRef(null);
 
@@ -86,16 +87,13 @@ export default function LorePreview({ slotData, item, position }) {
       >
         {items.map((varItem, idx) => {
           // Replace PAPI variables with Mock Player profile for real-time rendering
-          const applyMockPapi = (str) => {
-            if (!str) return '';
-            return String(str)
-              .replace(/%player_name%/g, 'Steve')
-              .replace(/%vault_eco_balance%/g, '$12,500')
-              .replace(/%luckperms_primary_group_name%/g, 'VIP');
-          };
-
-          const displayName = applyMockPapi(varItem.display_name || varItem.material || 'Item');
-          const loreList = (Array.isArray(varItem.lore) ? varItem.lore : (varItem.lore ? [varItem.lore] : [])).map(applyMockPapi);
+          const displayName = applyPlaceholderValues(
+            varItem.display_name || varItem.material || 'Item',
+            placeholderValues
+          );
+          const loreList = (
+            Array.isArray(varItem.lore) ? varItem.lore : (varItem.lore ? [varItem.lore] : [])
+          ).map((line) => applyPlaceholderValues(String(line), placeholderValues));
           const isCurrentActive = isMulti && idx === activeIdx;
           const priorityNum = varItem.priority || (idx + 1);
 

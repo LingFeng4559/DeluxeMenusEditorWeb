@@ -5,8 +5,10 @@ import GuiGrid from './components/GuiGrid';
 import ItemEditor from './components/ItemEditor';
 import YamlCodeEditor from './components/YamlCodeEditor';
 import TreeHierarchyExplorer from './components/TreeHierarchyExplorer';
+import PlaceholderTestPanel from './components/PlaceholderTestPanel';
 import { parseYamlToMenu, dumpMenuToYaml, DEFAULT_MENU } from './utils/yamlParser';
 import { Settings, UploadCloud, AlertTriangle } from 'lucide-react';
+import { isItemVisibleForPlaceholderValues } from './utils/placeholders';
 
 const MenuSettings = lazy(() => import('./components/MenuSettings'));
 const CommandPalette = lazy(() => import('./components/CommandPalette'));
@@ -48,13 +50,20 @@ function AppContent() {
 
   // Modals
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [placeholderValues, setPlaceholderValues] = useState({});
+
+  // Re-evaluate each slot from its highest-priority visible variant whenever
+  // simulated Placeholder values change.
+  useEffect(() => {
+    setActivePriorityMap({});
+  }, [placeholderValues]);
 
   // PERF-1: Pre-build slotItemsMap once per menu.items change (O(1) lookup instead of O(N×M) per render)
   const slotItemsMap = useMemo(() => {
     const map = new Map();
     if (!menu.items) return map;
     for (const [key, item] of Object.entries(menu.items)) {
-      if (!item) continue;
+      if (!item || !isItemVisibleForPlaceholderValues(item, placeholderValues)) continue;
       const slots = Array.isArray(item.slots) ? item.slots
         : (item.slot !== undefined ? [item.slot] : []);
       for (const s of slots) {
@@ -65,7 +74,7 @@ function AppContent() {
     // Sort each slot's items by priority ascending
     map.forEach(arr => arr.sort((a, b) => (a.priority || 999) - (b.priority || 999)));
     return map;
-  }, [menu.items]);
+  }, [menu.items, placeholderValues]);
 
   // PERF-2: Debounce ref for YAML parse — avoids full parse on every keystroke
   const yamlParseDebounceRef = useRef(null);
@@ -382,7 +391,7 @@ function AppContent() {
     if (!menu.items) return [];
     const list = [];
     for (const [key, item] of Object.entries(menu.items)) {
-      if (!item) continue;
+      if (!item || !isItemVisibleForPlaceholderValues(item, placeholderValues)) continue;
       if (item.slot === slotIdx || (Array.isArray(item.slots) && item.slots.includes(slotIdx))) {
         list.push({ key, ...item });
       }
@@ -641,6 +650,11 @@ function AppContent() {
           </button>
         </div>
 
+        <PlaceholderTestPanel
+          menu={menu}
+          values={placeholderValues}
+          onChangeValues={setPlaceholderValues}
+        />
 
         {/* IDE Tree Hierarchy Explorer Panel */}
         <TreeHierarchyExplorer
@@ -671,6 +685,7 @@ function AppContent() {
             onCutSlotItem={handleCutSlotItem}
             onPasteItemToSlot={handlePasteItemToSlot}
             onUpdateMenuTitle={handleUpdateMenuTitle}
+            placeholderValues={placeholderValues}
           />
 
           {/* Right Item Property Editor */}
@@ -688,6 +703,7 @@ function AppContent() {
             onDeleteItem={handleDeleteItem}
             onDuplicateItem={handleDuplicateItem}
             onApplyToSelectedSlots={handleApplyToSelectedSlots}
+            placeholderValues={placeholderValues}
           />
         </div>
 

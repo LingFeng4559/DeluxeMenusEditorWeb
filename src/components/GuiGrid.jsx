@@ -5,6 +5,7 @@ import { parseMinecraftText } from '../utils/minecraftColors';
 import ItemIcon from './ItemIcon';
 import { Layers, Info, Sparkles, Copy, Scissors, Clipboard, Trash2, Move, Edit3, Check } from 'lucide-react';
 import LorePreview from './LorePreview';
+import { applyPlaceholderValues } from '../utils/placeholders';
 
 export default function GuiGrid({
   menu,
@@ -22,7 +23,8 @@ export default function GuiGrid({
   onCopySlotItem,
   onCutSlotItem,
   onPasteItemToSlot,
-  onUpdateMenuTitle
+  onUpdateMenuTitle,
+  placeholderValues = {}
 }) {
   const { t } = useI18n();
   const [hoveredSlotData, setHoveredSlotData] = useState(null);
@@ -384,7 +386,7 @@ export default function GuiGrid({
                     className="flex items-center gap-1.5 cursor-pointer px-1 py-0.5 rounded hover:bg-[#b0b0b0]/50 transition group/title border border-transparent hover:border-[#8b8b8b]"
                   >
                     <div className="flex items-center gap-1">
-                      {parseMinecraftText(menu.menu_title || menu.title || 'Chest').map((seg, idx) => (
+                      {parseMinecraftText(applyPlaceholderValues(menu.menu_title || menu.title || 'Chest', placeholderValues)).map((seg, idx) => (
                         <span key={idx} style={seg.style} className="drop-shadow-none">
                           {seg.text}
                         </span>
@@ -643,6 +645,7 @@ export default function GuiGrid({
         <LorePreview
           slotData={hoveredSlotData}
           position={tooltipPos}
+          placeholderValues={placeholderValues}
         />
       )}
     </div>
