@@ -1,15 +1,26 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { Suspense, lazy, useState, useEffect, useEffectEvent, useMemo, useCallback, useRef } from 'react';
 import { I18nProvider, useI18n } from './i18n';
 import Header from './components/Header';
 import GuiGrid from './components/GuiGrid';
 import ItemEditor from './components/ItemEditor';
-import MenuSettings from './components/MenuSettings';
 import YamlCodeEditor from './components/YamlCodeEditor';
 import TreeHierarchyExplorer from './components/TreeHierarchyExplorer';
-import CommandPalette from './components/CommandPalette';
 import { parseYamlToMenu, dumpMenuToYaml, DEFAULT_MENU } from './utils/yamlParser';
-import { clearTextureCache } from './utils/textureCache';
 import { Settings, UploadCloud, AlertTriangle } from 'lucide-react';
+
+const MenuSettings = lazy(() => import('./components/MenuSettings'));
+const CommandPalette = lazy(() => import('./components/CommandPalette'));
+
+function createUniqueItemKey(items, preferredKey) {
+  const existingItems = items || {};
+  if (!Object.prototype.hasOwnProperty.call(existingItems, preferredKey)) return preferredKey;
+
+  let suffix = 2;
+  while (Object.prototype.hasOwnProperty.call(existingItems, `${preferredKey}_${suffix}`)) {
+    suffix += 1;
+  }
+  return `${preferredKey}_${suffix}`;
+}
 
 function AppContent() {
   const { t, addCustomLanguage } = useI18n();
@@ -93,7 +104,7 @@ function AppContent() {
     };
 
     silentAutoSync();
-  }, []);
+  }, [addCustomLanguage]);
 
   // Enterprise-Grade History Undo / Redo Stack (Max 50 steps)
   const historyStackRef = useRef([]);
@@ -187,46 +198,6 @@ function AppContent() {
 
   // Command Palette State
   const [showCommandPalette, setShowCommandPalette] = useState(false);
-
-  // Global IDE Keyboard Shortcuts (Ctrl+Z, Ctrl+Y, Ctrl+S, Delete, Ctrl+Shift+P)
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      // Command Palette Trigger (Ctrl+Shift+P or Ctrl+P)
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
-        e.preventDefault();
-        setShowCommandPalette((prev) => !prev);
-        return;
-      }
-
-      // Ignore other shortcut triggers when actively typing inside form inputs / textareas
-      const tagName = e.target.tagName.toLowerCase();
-      if (tagName === 'input' || tagName === 'textarea' || e.target.isContentEditable) {
-        return;
-      }
-
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
-        e.preventDefault();
-        if (e.shiftKey) {
-          handleRedo();
-        } else {
-          handleUndo();
-        }
-      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
-        e.preventDefault();
-        handleRedo();
-      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
-        e.preventDefault();
-        handleExportYaml();
-      } else if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (selectedSlot !== null) {
-          handleDeleteSlotItems(selectedSlot);
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleUndo, handleRedo, selectedSlot]);
 
   useEffect(() => {
     const handleDragOver = (e) => {
@@ -367,7 +338,7 @@ function AppContent() {
   // Paste Item into slot
   const handlePasteItemToSlot = (targetSlotIdx) => {
     if (!clipboardItem) return;
-    const newKey = `item_slot_${targetSlotIdx}_${Date.now().toString().slice(-4)}`;
+    const newKey = createUniqueItemKey(menu.items, `item_slot_${targetSlotIdx}_copy`);
     const { slot, slots, ...rest } = clipboardItem;
     const pastedItem = {
       ...rest,
@@ -435,7 +406,7 @@ function AppContent() {
   };
 
   const handleCreateSlotItem = (slotIdx = selectedSlot, initialMaterial = 'STONE') => {
-    const newKey = `item_slot_${slotIdx}`;
+    const newKey = createUniqueItemKey(menu.items, `item_slot_${slotIdx}`);
     const newItem = {
       material: initialMaterial,
       slot: slotIdx,
@@ -526,7 +497,7 @@ function AppContent() {
 
   const handleDuplicateItem = () => {
     if (!currentItem) return;
-    const newKey = `${currentItemKey}_copy`;
+    const newKey = createUniqueItemKey(menu.items, `${currentItemKey}_copy`);
     const occupiedSlots = new Set();
     Object.values(menu.items || {}).forEach((it) => {
       if (it.slot !== undefined) occupiedSlots.add(it.slot);
@@ -594,6 +565,38 @@ function AppContent() {
     handleYamlChange(templateYamlText, false);
     setIsDirty(false);
   };
+
+  const handleGlobalShortcut = useEffectEvent((e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+      e.preventDefault();
+      setShowCommandPalette((prev) => !prev);
+      return;
+    }
+
+    const tagName = e.target.tagName.toLowerCase();
+    if (tagName === 'input' || tagName === 'textarea' || e.target.isContentEditable) return;
+
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+      e.preventDefault();
+      if (e.shiftKey) handleRedo();
+      else handleUndo();
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+      e.preventDefault();
+      handleRedo();
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+      e.preventDefault();
+      handleExportYaml();
+    } else if (e.key === 'Delete' || e.key === 'Backspace') {
+      if (selectedSlot !== null) handleDeleteSlotItems(selectedSlot);
+    }
+  });
+
+  // Global IDE Keyboard Shortcuts always see the latest editor state.
+  useEffect(() => {
+    const handleKeyDown = (event) => handleGlobalShortcut(event);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500/30 relative">
@@ -727,29 +730,35 @@ function AppContent() {
 
       {/* Global Settings Modal */}
       {showSettingsModal && (
-        <MenuSettings
-          menu={menu}
-          onUpdateMenu={updateMenuState}
-          onClose={() => setShowSettingsModal(false)}
-        />
+        <Suspense fallback={null}>
+          <MenuSettings
+            menu={menu}
+            onUpdateMenu={updateMenuState}
+            onClose={() => setShowSettingsModal(false)}
+          />
+        </Suspense>
       )}
 
       {/* VS Code Style Command Palette (Ctrl+Shift+P) */}
-      <CommandPalette
-        isOpen={showCommandPalette}
-        onClose={() => setShowCommandPalette(false)}
-        menu={menu}
-        slotItemsMap={slotItemsMap}
-        onExecuteCommand={(cmd, payload) => {
-          if (cmd === 'OPEN_SETTINGS') setShowSettingsModal(true);
-          else if (cmd === 'EXPORT_YAML') handleExportYaml();
-          else if (cmd === 'CREATE_ITEM') handleCreateSlotItem(selectedSlot || 0);
-          else if (cmd === 'CLEAR_SELECTION') handleClearSelection();
-          else if (cmd === 'JUMP_TO_SLOT' && payload) {
-            handleSelectSlot(payload.slot);
-          }
-        }}
-      />
+      {showCommandPalette && (
+        <Suspense fallback={null}>
+          <CommandPalette
+            isOpen={showCommandPalette}
+            onClose={() => setShowCommandPalette(false)}
+            menu={menu}
+            slotItemsMap={slotItemsMap}
+            onExecuteCommand={(cmd, payload) => {
+              if (cmd === 'OPEN_SETTINGS') setShowSettingsModal(true);
+              else if (cmd === 'EXPORT_YAML') handleExportYaml();
+              else if (cmd === 'CREATE_ITEM') handleCreateSlotItem(selectedSlot || 0);
+              else if (cmd === 'CLEAR_SELECTION') handleClearSelection();
+              else if (cmd === 'JUMP_TO_SLOT' && payload) {
+                handleSelectSlot(payload.slot);
+              }
+            }}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

@@ -31,7 +31,7 @@ export default function MaterialSearchModal({ onClose, onSelect }) {
   const allItems = useMemo(
     () => getAllMinecraftItems(currentLang, customItemNames),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [currentLang, JSON.stringify(Object.keys(customItemNames))]
+    [currentLang, customItemNames]
   );
 
   const rawQuery = debouncedSearch.trim().toUpperCase().replace(/\s+/g, '_');

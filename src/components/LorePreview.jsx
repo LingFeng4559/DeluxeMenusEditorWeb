@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { useI18n } from '../i18n';
 import { parseMinecraftText } from '../utils/minecraftColors';
@@ -7,6 +7,24 @@ import { Sparkles } from 'lucide-react';
 
 export default function LorePreview({ slotData, item, position }) {
   const { t } = useI18n();
+  const scrollContainerRef = useRef(null);
+
+  // The tooltip intentionally ignores pointer events so moving from a slot
+  // toward it does not close the preview. Capture the wheel globally while
+  // the preview is mounted and redirect it to the lore container instead.
+  useEffect(() => {
+    const handleWheel = (event) => {
+      const scrollContainer = scrollContainerRef.current;
+      if (!scrollContainer || scrollContainer.scrollHeight <= scrollContainer.clientHeight) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      scrollContainer.scrollTop += event.deltaY;
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: false, capture: true });
+    return () => window.removeEventListener('wheel', handleWheel, { capture: true });
+  }, []);
 
   if (!position || position.x === undefined || position.y === undefined) return null;
 
@@ -62,7 +80,10 @@ export default function LorePreview({ slotData, item, position }) {
       )}
 
       {/* Item Variant Cards Stack */}
-      <div className={`space-y-2.5 ${isMulti ? 'max-h-[380px] overflow-y-auto pr-1' : ''}`}>
+      <div
+        ref={scrollContainerRef}
+        className="space-y-2.5 max-h-[min(380px,calc(100vh-90px))] overflow-y-auto overscroll-contain pr-1 [scrollbar-gutter:stable]"
+      >
         {items.map((varItem, idx) => {
           // Replace PAPI variables with Mock Player profile for real-time rendering
           const applyMockPapi = (str) => {

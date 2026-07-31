@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { useI18n } from '../i18n';
 import { parseMinecraftText } from '../utils/minecraftColors';
 import ItemIcon from './ItemIcon';
@@ -6,10 +6,11 @@ import {
   Edit3, Trash2, Copy, Plus, Search, Terminal, Eye, Flag,
   ChevronRight, Sparkles, Check, Hash, Layers, ShieldAlert, GitCompare, Key, Lock, DollarSign, Award, Users, Zap
 } from 'lucide-react';
-import MaterialSearchModal from './MaterialSearchModal';
 import RequirementPuzzleBuilder from './RequirementPuzzleBuilder';
 import PapiInput from './PapiInput';
 import ActionFlowBuilder from './ActionFlowBuilder';
+
+const MaterialSearchModal = lazy(() => import('./MaterialSearchModal'));
 
 export default function ItemEditor({
   item,
@@ -82,13 +83,15 @@ export default function ItemEditor({
         </div>
 
         {showSearchModal && (
-          <MaterialSearchModal
-            onClose={() => setShowSearchModal(false)}
-            onSelect={(mat) => {
-              setShowSearchModal(false);
-              if (onCreateItem) onCreateItem(selectedSlot, mat);
-            }}
-          />
+          <Suspense fallback={null}>
+            <MaterialSearchModal
+              onClose={() => setShowSearchModal(false)}
+              onSelect={(mat) => {
+                setShowSearchModal(false);
+                if (onCreateItem) onCreateItem(selectedSlot, mat);
+              }}
+            />
+          </Suspense>
         )}
       </aside>
     );
@@ -699,10 +702,12 @@ export default function ItemEditor({
       </div>
 
       {showSearchModal && (
-        <MaterialSearchModal
-          onClose={() => setShowSearchModal(false)}
-          onSelect={(selectedMaterial) => handleChange('material', selectedMaterial)}
-        />
+        <Suspense fallback={null}>
+          <MaterialSearchModal
+            onClose={() => setShowSearchModal(false)}
+            onSelect={(selectedMaterial) => handleChange('material', selectedMaterial)}
+          />
+        </Suspense>
       )}
     </aside>
   );

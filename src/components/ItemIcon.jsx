@@ -1,40 +1,43 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getCachedTextureUrl, setCachedTextureUrl, markNegativeCache, isNegativeCached } from '../utils/textureCache';
 import { getTextureCandidates } from '../utils/itemDatabase';
 import { resolveHdbTextureHash } from '../utils/hdbResolver';
 import { Box } from 'lucide-react';
 
 export default function ItemIcon({ material, className = 'w-8 h-8' }) {
-  const [srcIndex, setSrcIndex] = useState(0);
-  const [loadedUrl, setLoadedUrl] = useState(null);
-  const [hasFailedAll, setHasFailedAll] = useState(false);
+  const [sourceState, setSourceState] = useState({ material: '', index: 0 });
+  const [loadedTexture, setLoadedTexture] = useState({ material: '', url: null });
+  const [failedMaterial, setFailedMaterial] = useState(null);
 
   const matUpper = String(material || '').trim().toUpperCase();
+  const srcIndex = sourceState.material === matUpper ? sourceState.index : 0;
+  const loadedUrl = loadedTexture.material === matUpper ? loadedTexture.url : null;
+  const hasFailedAll = failedMaterial === matUpper;
 
   useEffect(() => {
     let isCancelled = false;
 
     // Reset state instantly when material changes
-    setSrcIndex(0);
-    setHasFailedAll(false);
+    setSourceState({ material: matUpper, index: 0 });
+    setFailedMaterial(null);
 
     // PERF-4: Check negative cache first — skip all HTTP requests for known-bad materials
     if (isNegativeCached(matUpper)) {
-      setLoadedUrl(null);
-      setHasFailedAll(true);
+      setLoadedTexture({ material: matUpper, url: null });
+      setFailedMaterial(matUpper);
       return;
     }
 
     const cached = getCachedTextureUrl(matUpper);
     if (cached && cached !== '__NEGATIVE__') {
-      setLoadedUrl(cached);
+      setLoadedTexture({ material: matUpper, url: cached });
       return;
     } else if (cached === '__NEGATIVE__') {
-      setLoadedUrl(null);
-      setHasFailedAll(true);
+      setLoadedTexture({ material: matUpper, url: null });
+      setFailedMaterial(matUpper);
       return;
     } else {
-      setLoadedUrl(null);
+      setLoadedTexture({ material: matUpper, url: null });
     }
 
     // Handle Async HDB Head resolution
@@ -45,13 +48,13 @@ export default function ItemIcon({ material, className = 'w-8 h-8' }) {
           if (!isCancelled && hash) {
             const url = `https://mc-heads.net/head/${hash}/32`;
             setCachedTextureUrl(matUpper, url);
-            setLoadedUrl(url);
+            setLoadedTexture({ material: matUpper, url });
           }
         })
         .catch(() => {
           if (!isCancelled) {
             const fallback = `https://mc-heads.net/head/MHF_Question/32`;
-            setLoadedUrl(fallback);
+            setLoadedTexture({ material: matUpper, url: fallback });
           }
         });
     }
@@ -78,11 +81,11 @@ export default function ItemIcon({ material, className = 'w-8 h-8' }) {
   const handleError = () => {
     const nextIndex = srcIndex + 1;
     if (nextIndex < candidates.length) {
-      setSrcIndex(nextIndex);
+      setSourceState({ material: matUpper, index: nextIndex });
     } else {
       // PERF-4: All candidates failed — mark as negative so we never retry
       markNegativeCache(matUpper);
-      setHasFailedAll(true);
+      setFailedMaterial(matUpper);
     }
   };
 

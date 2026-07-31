@@ -117,6 +117,8 @@ export function parseYamlToMenu(yamlText) {
     }
 
     const menu = {
+      // Preserve plugin fields that this editor does not understand yet.
+      ...menuData,
       menu_title: menuData.menu_title || '&eMenu',
       open_command: menuData.open_command || menuData.command || '',
       register_command: menuData.register_command !== undefined ? menuData.register_command : true,
@@ -149,7 +151,15 @@ export function dumpMenuToYaml(menu) {
     }
   }
 
+  const {
+    items: _items,
+    command: _legacyCommand,
+    ...menuFields
+  } = menu;
+
   const cleanData = {
+    // Keep unknown DeluxeMenus fields intact during an edit/export round trip.
+    ...menuFields,
     menu_title: menu.menu_title,
     ...(menu.open_command ? { open_command: menu.open_command } : {}),
     ...(menu.register_command === false ? { register_command: false } : {}),

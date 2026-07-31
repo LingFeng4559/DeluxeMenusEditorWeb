@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { useI18n } from '../i18n';
 import { Globe, Download, Upload, Copy, Check, FileCode, PlusCircle, Sparkles, RotateCcw, RotateCw } from 'lucide-react';
-import CustomLangModal from './CustomLangModal';
 import { SAMPLE_MENU, SAMPLE_SHOP, SAMPLE_VIP } from '../samples/samples';
+
+const CustomLangModal = lazy(() => import('./CustomLangModal'));
 
 export default function Header({
   onImportYaml,
@@ -147,7 +148,11 @@ export default function Header({
         </div>
       </div>
 
-      {showLangModal && <CustomLangModal onClose={() => setShowLangModal(false)} />}
+      {showLangModal && (
+        <Suspense fallback={null}>
+          <CustomLangModal onClose={() => setShowLangModal(false)} />
+        </Suspense>
+      )}
     </header>
   );
 }
