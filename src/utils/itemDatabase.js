@@ -231,6 +231,7 @@ export function getTextureCandidates(material) {
   let assetName = norm;
   if (norm === 'clock') assetName = 'clock_00';
   if (norm === 'compass') assetName = 'compass_00';
+  if (norm === 'recovery_compass') assetName = 'recovery_compass_00';
   if (norm === 'filled_map') assetName = 'map_filled';
   if (norm === 'writable_book') assetName = 'writable_book';
   if (norm === 'redstone_torch') assetName = 'redstone_torch';

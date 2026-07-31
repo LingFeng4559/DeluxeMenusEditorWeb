@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useState } from 'react';
 import { useI18n } from '../i18n';
 import { Globe, Download, Upload, Copy, Check, FileCode, PlusCircle, Sparkles, RotateCcw, RotateCw } from 'lucide-react';
-import { SAMPLE_MENU, SAMPLE_SHOP, SAMPLE_VIP } from '../samples/samples';
+import { getLocalizedTemplateLibrary } from '../samples/samples';
 
 const CustomLangModal = lazy(() => import('./CustomLangModal'));
 
@@ -16,6 +16,7 @@ export default function Header({
   canRedo
 }) {
   const { t, currentLang, setCurrentLang, availableLocales } = useI18n();
+  const localizedTemplates = getLocalizedTemplateLibrary(currentLang);
   const [copied, setCopied] = useState(false);
   const [showLangModal, setShowLangModal] = useState(false);
 
@@ -84,18 +85,17 @@ export default function Header({
         <div className="relative group">
           <select
             onChange={(e) => {
-              if (e.target.value === 'menu') onLoadTemplate(SAMPLE_MENU);
-              if (e.target.value === 'shop') onLoadTemplate(SAMPLE_SHOP);
-              if (e.target.value === 'vip') onLoadTemplate(SAMPLE_VIP);
+              const template = localizedTemplates[e.target.value];
+              if (template) onLoadTemplate(template.yaml);
               e.target.value = '';
             }}
             defaultValue=""
             className="px-3.5 py-2 text-xs font-semibold bg-slate-800/90 text-slate-200 border border-slate-700/80 rounded-lg hover:border-emerald-500/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition cursor-pointer"
           >
             <option value="" disabled>{t('app.templates')}</option>
-            <option value="menu">{t('header.sample_menu')}</option>
-            <option value="shop">{t('header.sample_shop')}</option>
-            <option value="vip">{t('header.sample_vip')}</option>
+            {Object.entries(localizedTemplates).map(([id, template]) => (
+              <option key={id} value={id}>{template.label}</option>
+            ))}
           </select>
         </div>
 
